@@ -86,9 +86,21 @@ export const updateTransactionStatus = async (
 
 // Get transactions for a wallet (as payer or receiver)
 export const findTransactionsByWalletId = async (walletId: number) => {
-	const asPayer = await prisma.transaction.findMany({
-		where: { payerWalletId: walletId },
+	return prisma.transaction.findMany({
+		where: {
+			OR: [{ payerWalletId: walletId }, { receiverWalletId: walletId }],
+		},
 		include: {
+			payerWallet: {
+				include: {
+					user: {
+						select: {
+							id: true,
+							phoneNumber: true,
+						},
+					},
+				},
+			},
 			receiverWallet: {
 				include: {
 					user: {
@@ -102,30 +114,6 @@ export const findTransactionsByWalletId = async (walletId: number) => {
 		},
 		orderBy: { createdAt: "desc" },
 	});
-
-	const asReceiver = await prisma.transaction.findMany({
-		where: { receiverWalletId: walletId },
-		include: {
-			payerWallet: {
-				include: {
-					user: {
-						select: {
-							id: true,
-							phoneNumber: true,
-						},
-					},
-				},
-			},
-		},
-		orderBy: { createdAt: "desc" },
-	});
-
-	// Merge and sort by date
-	const allTransactions = [...asPayer, ...asReceiver].sort(
-		(a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-	);
-
-	return allTransactions;
 };
 
 // Create a ledger entry

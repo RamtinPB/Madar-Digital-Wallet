@@ -52,7 +52,7 @@ export default function Dashboard() {
 			}
 		} catch (err) {
 			console.error("Failed to fetch wallets:", err);
-			setError("خطا در دریافت کیف‌پول‌ها");
+			setError("خطا در دریافت کیف‌ پول‌ها");
 		} finally {
 			setIsLoadingWallets(false);
 		}

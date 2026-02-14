@@ -49,7 +49,7 @@ export const findWalletByPublicId = async (publicId: string) => {
 export const findWalletsByUserId = async (userId: number) => {
 	return prisma.wallet.findMany({
 		where: { userId },
-		orderBy: { createdAt: "desc" },
+		orderBy: { createdAt: "asc" },
 	});
 };
 

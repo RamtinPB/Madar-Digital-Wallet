@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, Plus, Wallet } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Plus, Wallet } from "lucide-react";
 
 interface QuickActionsProps {
 	onDeposit: () => void;
@@ -24,7 +24,7 @@ export function QuickActions({
 						className="flex flex-col items-center gap-1 h-auto py-3"
 						onClick={onDeposit}
 					>
-						<Plus className="h-5 w-5 text-green-600" />
+						<ArrowDown className="h-5 w-5 text-green-600" />
 						<span className="text-sm">افزایش موجودی</span>
 					</Button>
 					<Button
@@ -32,7 +32,7 @@ export function QuickActions({
 						className="flex flex-col items-center gap-1 h-auto py-3"
 						onClick={onWithdraw}
 					>
-						<Wallet className="h-5 w-5 text-blue-600" />
+						<ArrowUp className="h-5 w-5 text-orange-600" />
 						<span className="text-sm">برداشت</span>
 					</Button>
 					<Button
@@ -40,7 +40,7 @@ export function QuickActions({
 						className="flex flex-col items-center gap-1 h-auto py-3"
 						onClick={onTransfer}
 					>
-						<ArrowUpDown className="h-5 w-5 text-purple-600" />
+						<ArrowUpDown className="h-5 w-5 text-blue-600" />
 						<span className="text-sm">انتقال</span>
 					</Button>
 					<Button
@@ -48,7 +48,7 @@ export function QuickActions({
 						className="flex flex-col items-center gap-1 h-auto py-3"
 						onClick={onCreateWallet}
 					>
-						<Plus className="h-5 w-5 text-orange-600" />
+						<Plus className="h-5 w-5 text-amber-400" />
 						<span className="text-sm">کیف‌ پول جدید</span>
 					</Button>
 				</div>
