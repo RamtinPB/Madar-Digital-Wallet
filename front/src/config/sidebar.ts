@@ -1,11 +1,4 @@
-import {
-	User,
-	LayoutDashboard,
-	Building2,
-	CreditCard,
-	FileText,
-	Settings,
-} from "lucide-react";
+import { LayoutDashboard, CreditCard, Settings } from "lucide-react";
 
 interface NavItem {
 	key: string;
@@ -29,17 +22,17 @@ export const navItems: NavItem[] = [
 	{
 		key: "dashboard",
 		name: "داشبورد",
-		icon: User,
+		icon: LayoutDashboard,
 		subNavItems: [],
 		href: "/",
 	},
 	{
 		key: "wallet",
 		name: "کیف پول",
-		icon: Building2,
+		icon: CreditCard,
 		subNavItems: [
 			{
-				key: "wallet-manager",
+				key: "wallets",
 				name: "مدیریت کیف پول ها",
 				href: "",
 				icon: undefined,
