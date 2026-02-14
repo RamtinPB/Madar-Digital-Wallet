@@ -5,6 +5,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 import { useLoginStages } from "@/components/login/hooks/useLoginStages";
 import { useOTPCountdown } from "@/components/login/hooks/useOTPCountdown";
@@ -27,6 +34,7 @@ export default function SignupPage() {
 	const setUser = useAuthenticateUser();
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
+	const [userType, setUserType] = useState<"CUSTOMER" | "BUSINESS">("CUSTOMER");
 
 	const {
 		stage,
@@ -70,12 +78,35 @@ export default function SignupPage() {
 					{/* STAGE CONTENT */}
 					<div className="mt-2">
 						{stage === 0 && (
-							<StagePhone
-								phone={phone}
-								setPhone={setPhone}
-								password={password}
-								setPassword={setPassword}
-							/>
+							<>
+								<StagePhone
+									phone={phone}
+									setPhone={setPhone}
+									password={password}
+									setPassword={setPassword}
+								/>
+
+								{/* USER TYPE SELECTOR */}
+								<div className="mt-4">
+									<label className="text-sm text-[#787471] mb-2 block">
+										نوع حساب کاربری
+									</label>
+									<Select
+										value={userType}
+										onValueChange={(value: "CUSTOMER" | "BUSINESS") =>
+											setUserType(value)
+										}
+									>
+										<SelectTrigger className="w-full">
+											<SelectValue placeholder="انتخاب نوع حساب" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="CUSTOMER">حساب شخصی</SelectItem>
+											<SelectItem value="BUSINESS">حساب کسب و کار</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</>
 						)}
 						{stage === 1 && <StageOTP code={code} setCode={setCode} />}
 					</div>
@@ -104,7 +135,12 @@ export default function SignupPage() {
 									setStage(1);
 								} else {
 									// verify OTP (signup)
-									const data = await apiSignup(phone, password, code.join(""));
+									const data = await apiSignup(
+										phone,
+										password,
+										code.join(""),
+										userType,
+									);
 
 									// Update auth with zustand hooks
 									if (data.accessToken) {

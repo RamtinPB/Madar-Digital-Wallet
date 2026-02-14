@@ -136,12 +136,13 @@ export async function signup(
 	phoneNumber: string,
 	password: string,
 	otp: string,
+	userType: "CUSTOMER" | "BUSINESS" = "CUSTOMER",
 ) {
 	const res = await fetch(`${API_BASE}/auth/signup`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		credentials: "include",
-		body: JSON.stringify({ phoneNumber, password, otp }),
+		body: JSON.stringify({ phoneNumber, password, otp, userType }),
 	});
 
 	if (!res.ok) {
