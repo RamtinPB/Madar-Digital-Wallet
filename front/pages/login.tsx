@@ -10,11 +10,13 @@ import { useLoginStages } from "@/components/login/hooks/useLoginStages";
 import { useOTPCountdown } from "@/components/login/hooks/useOTPCountdown";
 import { formatTime } from "@/components/login/utils/formatTime";
 
-import { StagePhone } from "@/components/login/StagePhone";
-import { StageOTP } from "@/components/login/StageOTP";
-import { LoginHeader } from "@/components/login/LoginHeader";
-import { LoginFooterPhone } from "@/components/login/LoginFooterPhone";
-import { LoginFooterOTP } from "@/components/login/LoginFooterOTP";
+import {
+	StagePhone,
+	StageOTP,
+	LoginHeader,
+	LoginFooterPhone,
+	LoginFooterOTP,
+} from "@/components/login";
 import { requestOtp, login as apiLogin, setAccessToken } from "@/lib/api/auth";
 import { useAuthenticateUser } from "@/hooks/useAuth";
 

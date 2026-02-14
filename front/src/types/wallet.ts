@@ -1,0 +1,35 @@
+export interface Wallet {
+	id: number;
+	publicId: string;
+	name?: string; // Optional wallet name
+	balance: string; // Decimal from Prisma
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface Transaction {
+	id: number;
+	publicId: string;
+	status: "PENDING" | "OTP_VERIFIED" | "COMPLETED" | "FAILED";
+	transactionType:
+		| "TRANSFER"
+		| "DEPOSIT"
+		| "WITHDRAW"
+		| "PURCHASE"
+		| "REFUND"
+		| "ADMIN_ADJUSTMENT";
+	amount: string;
+	payerWalletId: number;
+	receiverWalletId: number | null;
+	createdAt: string;
+	receiverWallet?: {
+		user: {
+			phoneNumber: string;
+		};
+	};
+	payerWallet?: {
+		user: {
+			phoneNumber: string;
+		};
+	};
+}
