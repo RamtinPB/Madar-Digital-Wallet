@@ -156,7 +156,11 @@ export async function signup(
 
 	const data = await res.json();
 	if (data.accessToken) setAccessToken(data.accessToken);
-	return data;
+	return {
+		user: data.user,
+		wallet: data.wallet,
+		accessToken: data.accessToken,
+	};
 }
 
 export async function logout() {

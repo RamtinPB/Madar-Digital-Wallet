@@ -5,6 +5,7 @@ import {
 	parseExpiryToMs,
 } from "../../infrastructure/auth/jwt.provider";
 import * as authRepository from "./auth.repository";
+import * as walletRepository from "../wallet/wallet.repository";
 import bcrypt from "bcryptjs";
 
 const OTP_LENGTH = 4;
@@ -91,6 +92,9 @@ export const signupWithPasswordOtp = async (
 		userType,
 	);
 
+	// Create a wallet for the new user (default balance: 0)
+	const wallet = await walletRepository.createWallet(newUser.id, 0);
+
 	// Generate tokens
 	const accessToken = signAccessToken({
 		userId: newUser.id,
@@ -109,6 +113,11 @@ export const signupWithPasswordOtp = async (
 			id: newUser.id,
 			phoneNumber: newUser.phoneNumber,
 			userType: newUser.userType,
+		},
+		wallet: {
+			id: wallet.id,
+			publicId: wallet.publicId,
+			balance: wallet.balance,
 		},
 		accessToken,
 		refreshToken,
