@@ -5,6 +5,7 @@ import swagger from "@elysiajs/swagger";
 
 import { registerAuthRoutes } from "./modules/auth/auth.route";
 import { registerWalletRoutes } from "./modules/wallet/wallet.route";
+import { registerTransactionRoutes } from "./modules/transaction/transaction.route";
 
 export const app = new Elysia()
 	.use(
@@ -31,7 +32,7 @@ export const app = new Elysia()
 			},
 			swaggerOptions: {
 				persistAuthorization: true,
-				docExpansion: "none",
+				docExpansion: "full",
 			},
 		}),
 	)
@@ -39,6 +40,7 @@ export const app = new Elysia()
 
 registerAuthRoutes(app);
 registerWalletRoutes(app);
+registerTransactionRoutes(app);
 
 app.listen(4000);
 

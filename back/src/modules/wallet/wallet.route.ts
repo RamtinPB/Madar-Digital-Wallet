@@ -1,4 +1,3 @@
-import { t } from "elysia";
 import { app } from "../../server";
 import * as walletController from "./wallet.controller";
 import { requireAuth } from "../../infrastructure/auth/auth.guard";
@@ -27,29 +26,4 @@ export function registerWalletRoutes(appInstance: typeof app) {
 			beforeHandle: requireAuth,
 		},
 	);
-
-	// Fund/deposit money into wallet
-	appInstance.post("/wallet/:id/fund", walletController.fundWallet, {
-		beforeHandle: requireAuth,
-		body: t.Object({
-			amount: t.Number({ minimum: 1 }),
-		}),
-	});
-
-	// Withdraw money from wallet
-	appInstance.post(
-		"/wallet/:id/withdraw",
-		walletController.withdrawFromWallet,
-		{
-			beforeHandle: requireAuth,
-			body: t.Object({
-				amount: t.Number({ minimum: 1 }),
-			}),
-		},
-	);
-
-	// Get wallet balance
-	appInstance.get("/wallet/:id/balance", walletController.getWalletBalance, {
-		beforeHandle: requireAuth,
-	});
 }
