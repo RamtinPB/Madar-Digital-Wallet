@@ -32,7 +32,7 @@ export const app = new Elysia()
 			},
 			swaggerOptions: {
 				persistAuthorization: true,
-				docExpansion: "full",
+				docExpansion: "list",
 			},
 		}),
 	)

@@ -34,7 +34,7 @@ model User {
   revokedAccessTokens RevokedAccessToken[]
 
   wallets        Wallet[]
-  paymentIntents PaymentIntent[]
+  paymentIntents PaymentIntent[] // Future: for card/top-up payments
 }
 
 model OTP {
@@ -96,9 +96,9 @@ model Wallet {
   userId Int
 
   ledgerEntries  LedgerEntry[]
-  paymentIntents PaymentIntent[]
+  paymentIntents PaymentIntent[] // Future: for card/top-up payments
 
-  // Add these TWO relations:
+  // Two separate relations to Transaction (for payer and receiver)
   payerTransactions    Transaction[] @relation("PayerWallet")
   receiverTransactions Transaction[] @relation("ReceiverWallet")
 
@@ -120,7 +120,7 @@ model Transaction {
   receiverWallet Wallet? @relation("ReceiverWallet", fields: [receiverWalletId], references: [id])
 
   ledgerEntries LedgerEntry[]
-  invoice       Invoice?
+  invoice       Invoice? // Future: for billing/requesting payment from users
 }
 
 enum TransactionType {
@@ -158,8 +158,16 @@ enum LedgerType {
   DEPOSIT
   P2P
   PURCHASE
+  REFUND
 }
 
+// =============================================================================
+// FUTURE USE MODELS - Uncomment and implement when needed
+// =============================================================================
+
+/// Invoice - For requesting payment from another user
+/// Use case: Business users can send invoices/bills to customers
+/// Example: "User A requests $50 from User B"
 model Invoice {
   id            Int         @id @default(autoincrement())
   publicId      String      @unique @default(cuid())
@@ -169,6 +177,10 @@ model Invoice {
   metadata      Json
 }
 
+/// PaymentIntent - For external payment methods (Stripe-style)
+/// Use case: Add money to wallet via card payment
+/// Flow: Create PaymentIntent -> Collect card -> Confirm -> Add to wallet
+/// Status: PENDING -> OTP_SENT -> CONFIRMED/EXPIRED
 model PaymentIntent {
   id        Int                 @id @default(autoincrement())
   publicId  String              @unique @default(cuid())
@@ -184,8 +196,8 @@ model PaymentIntent {
 }
 
 enum PaymentIntentStatus {
-  PENDING
-  OTP_SENT
-  CONFIRMED
-  EXPIRED
+  PENDING // Created, awaiting payment
+  OTP_SENT // OTP sent for verification
+  CONFIRMED // Payment successful, funds added to wallet
+  EXPIRED // Payment expired
 }
