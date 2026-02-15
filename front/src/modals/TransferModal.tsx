@@ -33,6 +33,7 @@ import {
 	Users,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { DirectionProvider } from "@/components/ui/direction";
 
 interface TransferModalProps {
 	isOpen: boolean;
@@ -183,175 +184,182 @@ export function TransferModal({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
-			<DialogContent className="sm:max-w-md">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
-						<ArrowUpDown className="h-5 w-5 text-blue-600" />
-						انتقال بین کیف پول‌ها
-					</DialogTitle>
-					<DialogDescription>
-						مبلغ را به کیف پول دیگری انتقال دهید
-					</DialogDescription>
-				</DialogHeader>
+		<DirectionProvider dir="rtl">
+			<Dialog open={isOpen} onOpenChange={handleOpenChange}>
+				<DialogContent
+					dir="rtl"
+					className="sm:max-w-md [&>button]:left-4 [&>button]:right-auto"
+				>
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<ArrowUpDown className="h-5 w-5 text-blue-600" />
+							انتقال بین کیف پول‌ها
+						</DialogTitle>
+						<DialogDescription className="text-right" dir="rtl">
+							مبلغ را به کیف پول دیگری انتقال دهید
+						</DialogDescription>
+					</DialogHeader>
 
-				<form onSubmit={handleSubmit} className="space-y-4">
-					{/* Source Wallet Selection */}
-					<div className="space-y-2">
-						<label className="text-sm font-medium">کیف پول مبدا</label>
-						<Select value={fromWalletId} onValueChange={setFromWalletId}>
-							<SelectTrigger>
-								<SelectValue placeholder="انتخاب کیف پول مبدا" />
-							</SelectTrigger>
-							<SelectContent>
-								{wallets.map((w) => (
-									<SelectItem key={w.id} value={w.id.toString()}>
-										{w.name || `کیف پول ${w.id}`} - {formatCurrency(w.balance)}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-
-					{/* Transfer Mode Toggle */}
-					<div className="flex items-center justify-between bg-muted p-3 rounded-lg">
-						<div className="flex items-center gap-2">
-							{isP2PMode ? (
-								<Users className="h-4 w-4 text-blue-600" />
-							) : (
-								<WalletIcon className="h-4 w-4 text-green-600" />
-							)}
-							<span className="text-sm font-medium">
-								{isP2PMode ? "انتقال P2P" : "انتقال به کیف پول خود"}
-							</span>
-						</div>
-						<Switch
-							checked={isP2PMode}
-							onCheckedChange={(checked) => {
-								setIsP2PMode(checked);
-								setToWalletId("");
-								setRecipientPublicId("");
-								setError(null);
-							}}
-						/>
-					</div>
-
-					{/* Destination Wallet Selection */}
-					<div className="space-y-2">
-						<label className="text-sm font-medium">
-							{isP2PMode ? "شناسه کیف پول گیرنده" : "کیف پول مقصد"}
-						</label>
-						{isP2PMode ? (
-							<Input
-								type="text"
-								placeholder="شناسه کیف پول گیرنده را وارد کنید"
-								value={recipientPublicId}
-								onChange={(e) => setRecipientPublicId(e.target.value)}
-								dir="ltr"
-							/>
-						) : (
-							<Select
-								value={toWalletId}
-								onValueChange={setToWalletId}
-								disabled={availableDestinationWallets.length === 0}
-							>
+					<form onSubmit={handleSubmit} className="space-y-4">
+						{/* Source Wallet Selection */}
+						<div className="space-y-2">
+							<label className="text-sm font-medium">کیف پول مبدا</label>
+							<Select value={fromWalletId} onValueChange={setFromWalletId}>
 								<SelectTrigger>
-									<SelectValue placeholder="انتخاب کیف پول مقصد" />
+									<SelectValue placeholder="انتخاب کیف پول مبدا" />
 								</SelectTrigger>
 								<SelectContent>
-									{availableDestinationWallets.map((w) => (
+									{wallets.map((w) => (
 										<SelectItem key={w.id} value={w.id.toString()}>
-											{w.name || `کیف پول ${w.id}`}
+											{w.name || `کیف پول ${w.id}`} -{" "}
+											{formatCurrency(w.balance)}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
-						)}
-					</div>
+						</div>
 
-					{/* Amount Input */}
-					<div className="space-y-2">
-						<label className="text-sm font-medium">مبلغ (تومان)</label>
-						<Input
-							type="number"
-							placeholder="مبلغ را وارد کنید"
-							value={amount}
-							onChange={(e) => setAmount(e.target.value)}
-							min="1000"
-							step="1000"
-						/>
-					</div>
+						{/* Transfer Mode Toggle */}
+						<div className="flex items-center justify-between bg-muted p-3 rounded-lg">
+							<div className="flex items-center gap-2">
+								{isP2PMode ? (
+									<Users className="h-4 w-4 text-blue-600" />
+								) : (
+									<WalletIcon className="h-4 w-4 text-green-600" />
+								)}
+								<span className="text-sm font-medium">
+									{isP2PMode ? "انتقال P2P" : "انتقال به کیف پول خود"}
+								</span>
+							</div>
+							<Switch
+								dir="ltr"
+								checked={isP2PMode}
+								onCheckedChange={(checked) => {
+									setIsP2PMode(checked);
+									setToWalletId("");
+									setRecipientPublicId("");
+									setError(null);
+								}}
+							/>
+						</div>
 
-					{/* Transfer Summary */}
-					{fromWallet && amount && (
-						<div className="bg-muted p-3 rounded-lg text-sm space-y-2">
-							<div className="flex justify-between">
-								<p className="text-muted-foreground">موجودی مبدا:</p>
-								<p className="font-semibold">
-									{formatCurrency(fromWallet.balance)}
-								</p>
-							</div>
-							<div className="flex justify-between">
-								<p className="text-muted-foreground">مبلغ انتقال:</p>
-								<p className="font-semibold text-blue-600">
-									-{formatCurrency(amount)}
-								</p>
-							</div>
-							<div className="flex justify-between border-t pt-2">
-								<p className="text-muted-foreground">موجودی جدید:</p>
-								<p
-									className={`font-semibold ${
-										canTransfer ? "" : "text-destructive"
-									}`}
+						{/* Destination Wallet Selection */}
+						<div className="space-y-2">
+							<label className="text-sm font-medium">
+								{isP2PMode ? "شناسه کیف پول گیرنده" : "کیف پول مقصد"}
+							</label>
+							{isP2PMode ? (
+								<Input
+									type="text"
+									placeholder="شناسه کیف پول گیرنده را وارد کنید"
+									value={recipientPublicId}
+									onChange={(e) => setRecipientPublicId(e.target.value)}
+									dir="ltr"
+								/>
+							) : (
+								<Select
+									value={toWalletId}
+									onValueChange={setToWalletId}
+									disabled={availableDestinationWallets.length === 0}
 								>
-									{formatCurrency(
-										parseFloat(fromWallet.balance) - transferAmount,
-									)}
-								</p>
+									<SelectTrigger>
+										<SelectValue placeholder="انتخاب کیف پول مقصد" />
+									</SelectTrigger>
+									<SelectContent>
+										{availableDestinationWallets.map((w) => (
+											<SelectItem key={w.id} value={w.id.toString()}>
+												{w.name || `کیف پول ${w.id}`}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							)}
+						</div>
+
+						{/* Amount Input */}
+						<div className="space-y-2">
+							<label className="text-sm font-medium">مبلغ (تومان)</label>
+							<Input
+								type="number"
+								placeholder="مبلغ را وارد کنید"
+								value={amount}
+								onChange={(e) => setAmount(e.target.value)}
+								min="1000"
+								step="1000"
+							/>
+						</div>
+
+						{/* Transfer Summary */}
+						{fromWallet && amount && (
+							<div className="bg-muted p-3 rounded-lg text-sm space-y-2">
+								<div className="flex justify-between">
+									<p className="text-muted-foreground">موجودی مبدا:</p>
+									<p className="font-semibold">
+										{formatCurrency(fromWallet.balance)}
+									</p>
+								</div>
+								<div className="flex justify-between">
+									<p className="text-muted-foreground">مبلغ انتقال:</p>
+									<p className="font-semibold text-blue-600">
+										-{formatCurrency(amount)}
+									</p>
+								</div>
+								<div className="flex justify-between border-t pt-2">
+									<p className="text-muted-foreground">موجودی جدید:</p>
+									<p
+										className={`font-semibold ${
+											canTransfer ? "" : "text-destructive"
+										}`}
+									>
+										{formatCurrency(
+											parseFloat(fromWallet.balance) - transferAmount,
+										)}
+									</p>
+								</div>
 							</div>
-						</div>
-					)}
+						)}
 
-					{/* Insufficient Balance Warning */}
-					{fromWallet && amount && !canTransfer && (
-						<div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
-							<AlertTriangle className="h-4 w-4" />
-							موجودی کافی نیست
-						</div>
-					)}
+						{/* Insufficient Balance Warning */}
+						{fromWallet && amount && !canTransfer && (
+							<div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+								<AlertTriangle className="h-4 w-4" />
+								موجودی کافی نیست
+							</div>
+						)}
 
-					{/* Error Message */}
-					{error && (
-						<p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
-							{error}
-						</p>
-					)}
+						{/* Error Message */}
+						{error && (
+							<p className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+								{error}
+							</p>
+						)}
 
-					<DialogFooter>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={onClose}
-							disabled={isLoading}
-						>
-							انصراف
-						</Button>
-						<Button
-							type="submit"
-							disabled={
-								isLoading ||
-								!fromWalletId ||
-								(!isP2PMode && !toWalletId) ||
-								(isP2PMode && !recipientPublicId) ||
-								!canTransfer
-							}
-						>
-							{isLoading && <Loader2 className="h-4 w-4 ml-2 animate-spin" />}
-							تایید و انتقال
-						</Button>
-					</DialogFooter>
-				</form>
-			</DialogContent>
-		</Dialog>
+						<DialogFooter>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={onClose}
+								disabled={isLoading}
+							>
+								انصراف
+							</Button>
+							<Button
+								type="submit"
+								disabled={
+									isLoading ||
+									!fromWalletId ||
+									(!isP2PMode && !toWalletId) ||
+									(isP2PMode && !recipientPublicId) ||
+									!canTransfer
+								}
+							>
+								{isLoading && <Loader2 className="h-4 w-4 ml-2 animate-spin" />}
+								تایید و انتقال
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
+		</DirectionProvider>
 	);
 }
