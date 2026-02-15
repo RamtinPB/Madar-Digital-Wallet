@@ -95,6 +95,9 @@ export function DepositModal({
 		(w) => w.id.toString() === selectedWalletId,
 	);
 
+	// Calculate deposit amount
+	const depositAmount = parseFloat(amount) || 0;
+
 	return (
 		<DirectionProvider dir="rtl">
 			<Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -149,11 +152,33 @@ export function DepositModal({
 
 						{/* Selected Wallet Balance Display */}
 						{selectedWallet && (
-							<div className="bg-muted p-3 rounded-lg text-sm">
-								<p className="text-muted-foreground">موجودی فعلی:</p>
-								<p className="font-semibold">
-									{formatCurrency(selectedWallet.balance)}
-								</p>
+							<div className="bg-muted p-3 rounded-lg text-sm space-y-2">
+								<div className="flex justify-between">
+									<p className="text-muted-foreground">موجودی فعلی:</p>
+									<p className="font-semibold">
+										{formatCurrency(selectedWallet.balance)}
+									</p>
+								</div>
+								{amount && (
+									<div className="flex justify-between">
+										<p className="text-muted-foreground">مبلغ واریز:</p>
+										<p className="font-semibold text-green-600">
+											+ {formatCurrency(amount)}
+										</p>
+									</div>
+								)}
+								{amount && (
+									<div className="flex justify-between border-t pt-2">
+										<p className="text-muted-foreground">
+											موجودی بعد از واریز:
+										</p>
+										<p className="font-semibold text-green-600">
+											{formatCurrency(
+												parseFloat(selectedWallet.balance) + depositAmount,
+											)}
+										</p>
+									</div>
+								)}
 							</div>
 						)}
 

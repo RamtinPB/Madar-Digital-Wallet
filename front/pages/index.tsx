@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/wallet";
 import type { Wallet, Transaction } from "@/lib/api/wallet";
 import { useAuthStore } from "@/stores/auth.store";
+import { DepositModal, WithdrawModal, TransferModal } from "@/modals";
 
 export default function Dashboard() {
 	const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -22,6 +23,11 @@ export default function Dashboard() {
 	const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
 	const [isCreatingWallet, setIsCreatingWallet] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	// Modal states
+	const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+	const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+	const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
 	const { user } = useAuthStore();
 
@@ -101,18 +107,15 @@ export default function Dashboard() {
 	// Get selected wallet
 	const selectedWallet = wallets.find((w) => w.publicId === selectedWalletId);
 
-	// Quick action handlers (placeholder for now)
+	// Quick action handlers
 	const handleDeposit = () => {
-		// TODO: Open deposit dialog
-		console.log("Deposit");
+		setIsDepositModalOpen(true);
 	};
 	const handleWithdraw = () => {
-		// TODO: Open withdraw dialog
-		console.log("Withdraw");
+		setIsWithdrawModalOpen(true);
 	};
 	const handleTransfer = () => {
-		// TODO: Open transfer dialog
-		console.log("Transfer");
+		setIsTransferModalOpen(true);
 	};
 
 	return (
@@ -174,6 +177,29 @@ export default function Dashboard() {
 					/>
 				</div>
 			</div>
+
+			{/* Modals */}
+			<DepositModal
+				isOpen={isDepositModalOpen}
+				onClose={() => setIsDepositModalOpen(false)}
+				wallet={selectedWallet || null}
+				wallets={wallets}
+				onSuccess={fetchWallets}
+			/>
+			<WithdrawModal
+				isOpen={isWithdrawModalOpen}
+				onClose={() => setIsWithdrawModalOpen(false)}
+				wallet={selectedWallet || null}
+				wallets={wallets}
+				onSuccess={fetchWallets}
+			/>
+			<TransferModal
+				isOpen={isTransferModalOpen}
+				onClose={() => setIsTransferModalOpen(false)}
+				wallet={selectedWallet || null}
+				wallets={wallets}
+				onSuccess={fetchWallets}
+			/>
 		</div>
 	);
 }

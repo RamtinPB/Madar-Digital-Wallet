@@ -170,7 +170,7 @@ export function WithdrawModal({
 									<div className="flex justify-between">
 										<p className="text-muted-foreground">مبلغ برداشت:</p>
 										<p className="font-semibold text-orange-600">
-											-{formatCurrency(amount)}
+											- {formatCurrency(amount)}
 										</p>
 									</div>
 								)}

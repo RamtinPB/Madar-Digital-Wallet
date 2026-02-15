@@ -254,7 +254,7 @@ export function TransferModal({
 									placeholder="شناسه کیف پول گیرنده را وارد کنید"
 									value={recipientPublicId}
 									onChange={(e) => setRecipientPublicId(e.target.value)}
-									dir="ltr"
+									dir="rtl"
 								/>
 							) : (
 								<Select
