@@ -3,6 +3,7 @@ export interface Wallet {
 	publicId: string;
 	name?: string; // Optional wallet name
 	balance: string; // Decimal from Prisma
+	primary: boolean; // Whether this is the primary wallet
 	createdAt: string;
 	updatedAt: string;
 }

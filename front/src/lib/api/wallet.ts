@@ -44,6 +44,29 @@ export async function getWalletById(
 	return response.json();
 }
 
+// Get wallet by publicId
+export async function getWalletByPublicId(
+	publicId: string,
+): Promise<{ wallet: Wallet }> {
+	const response = await authenticatedFetch(
+		`${API_BASE}/wallet/publicId/${publicId}`,
+		{
+			method: "GET",
+		},
+	);
+
+	if (!response.ok) {
+		let errMsg = "Wallet not found";
+		try {
+			const body = await response.json();
+			errMsg = body?.error || errMsg;
+		} catch (e) {}
+		throw new Error(errMsg);
+	}
+
+	return response.json();
+}
+
 // Get wallet transactions (recent)
 export async function getWalletTransactions(
 	walletId: number,
@@ -164,6 +187,60 @@ export async function transferFunds(
 
 	if (!response.ok) {
 		let errMsg = "Failed to transfer";
+		try {
+			const body = await response.json();
+			errMsg = body?.error || errMsg;
+		} catch (e) {}
+		throw new Error(errMsg);
+	}
+
+	return response.json();
+}
+
+// Transfer funds to another user by their publicId (P2P transfer)
+export async function transferFundsByPublicId(
+	fromWalletId: number,
+	recipientPublicId: string,
+	amount: number,
+): Promise<{ transaction: Transaction }> {
+	const response = await authenticatedFetch(
+		`${API_BASE}/transaction/transfer/p2p`,
+		{
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				fromWalletId,
+				recipientPublicId,
+				amount,
+			}),
+		},
+	);
+
+	if (!response.ok) {
+		let errMsg = "Failed to transfer";
+		try {
+			const body = await response.json();
+			errMsg = body?.error || errMsg;
+		} catch (e) {}
+		throw new Error(errMsg);
+	}
+
+	return response.json();
+}
+
+// Set wallet as primary
+export async function setPrimaryWallet(
+	walletId: number,
+): Promise<{ wallet: Wallet }> {
+	const response = await authenticatedFetch(
+		`${API_BASE}/wallet/${walletId}/primary`,
+		{
+			method: "PUT",
+		},
+	);
+
+	if (!response.ok) {
+		let errMsg = "Failed to set primary wallet";
 		try {
 			const body = await response.json();
 			errMsg = body?.error || errMsg;

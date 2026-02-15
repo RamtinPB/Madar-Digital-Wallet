@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -38,18 +38,23 @@ export function DepositModal({
 	wallets,
 	onSuccess,
 }: DepositModalProps) {
-	const [selectedWalletId, setSelectedWalletId] = useState<string>(
-		wallet?.id.toString() || "",
-	);
+	const [selectedWalletId, setSelectedWalletId] = useState<string>("");
 	const [amount, setAmount] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	// Reset state when modal opens
+	// Sync selectedWalletId when wallet prop changes
+	useEffect(() => {
+		if (wallet && isOpen) {
+			setSelectedWalletId(wallet.id.toString());
+		}
+	}, [wallet, isOpen]);
+
+	// Reset state when modal opens/closes
 	const handleOpenChange = (open: boolean) => {
 		if (!open) {
 			onClose();
-			setSelectedWalletId(wallet?.id.toString() || "");
+			setSelectedWalletId("");
 			setAmount("");
 			setError(null);
 		} else if (wallet) {

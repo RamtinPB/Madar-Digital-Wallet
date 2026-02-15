@@ -57,3 +57,22 @@ export const getUserWallets = async (ctx: any) => {
 		return { error: err.message || "Failed to get wallets" };
 	}
 };
+
+// Set a wallet as primary for the authenticated user
+export const setPrimaryWallet = async (ctx: any) => {
+	const walletId = parseInt(ctx.params.id);
+	const userId = ctx.user.id;
+
+	if (isNaN(walletId)) {
+		ctx.set.status = 400;
+		return { error: "Invalid wallet ID" };
+	}
+
+	try {
+		const result = await walletService.setPrimaryWallet(userId, walletId);
+		return result;
+	} catch (err: any) {
+		ctx.set.status = err.message.includes("not belong") ? 403 : 404;
+		return { error: err.message || "Failed to set primary wallet" };
+	}
+};

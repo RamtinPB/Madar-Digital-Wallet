@@ -20,10 +20,15 @@ export function registerWalletRoutes(appInstance: typeof app) {
 
 	// Get wallet by public ID
 	appInstance.get(
-		"/wallet/public/:publicId",
+		"/wallet/publicId/:publicId",
 		walletController.getWalletByPublicId,
 		{
 			beforeHandle: requireAuth,
 		},
 	);
+
+	// Set wallet as primary (PUT /wallet/:id/primary)
+	appInstance.put("/wallet/:id/primary", walletController.setPrimaryWallet, {
+		beforeHandle: requireAuth,
+	});
 }

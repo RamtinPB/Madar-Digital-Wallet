@@ -4,11 +4,13 @@ import { prisma } from "../../infrastructure/db/prisma.client";
 export const createWallet = async (
 	userId: number,
 	initialBalance: number = 0,
+	isPrimary: boolean = false,
 ) => {
 	return prisma.wallet.create({
 		data: {
 			userId,
 			balance: initialBalance,
+			primary: isPrimary,
 		},
 	});
 };
@@ -72,4 +74,23 @@ export const getWalletBalance = async (id: number) => {
 		select: { balance: true },
 	});
 	return wallet?.balance;
+};
+
+// Set a wallet as primary (transactional: unset all other primary wallets, then set this one)
+export const setPrimaryWallet = async (userId: number, walletId: number) => {
+	return prisma.$transaction(async (tx) => {
+		// First, unset all primary wallets for this user
+		await tx.wallet.updateMany({
+			where: { userId, primary: true },
+			data: { primary: false },
+		});
+
+		// Then, set the specified wallet as primary
+		const updatedWallet = await tx.wallet.update({
+			where: { id: walletId },
+			data: { primary: true },
+		});
+
+		return updatedWallet;
+	});
 };

@@ -29,7 +29,12 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getUserWallets, type Wallet } from "@/lib/api/wallet";
+import {
+	createWallet,
+	getUserWallets,
+	setPrimaryWallet,
+	type Wallet,
+} from "@/lib/api/wallet";
 import { formatCurrency, formatNumber } from "@/lib/format";
 
 // Import modals
@@ -101,6 +106,30 @@ export default function WalletsPage() {
 		fetchWallets();
 	};
 
+	// Handle set primary wallet
+	const handleSetPrimary = async (walletId: number, isPrimary: boolean) => {
+		if (isPrimary) return; // Already primary, do nothing
+		try {
+			await setPrimaryWallet(walletId);
+			fetchWallets(); // Refresh wallets to update primary status
+		} catch (err) {
+			setError(
+				err instanceof Error ? err.message : "خطا در تنظیم کیف پول پیش‌نما",
+			);
+		}
+	};
+
+	// Handle create wallet
+	const handleCreateWallet = async () => {
+		try {
+			setError(null);
+			await createWallet();
+			await fetchWallets(); // Refresh wallets after creation
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "خطا در ایجاد کیف پول");
+		}
+	};
+
 	// Format wallet public ID for display
 	const formatPublicId = (publicId: string) => {
 		if (publicId.length <= 8) return publicId;
@@ -118,7 +147,7 @@ export default function WalletsPage() {
 							مدیریت و مشاهده تمام کیف‌ پول‌های شما
 						</p>
 					</div>
-					<Button onClick={() => router.push("/wallets/create")}>
+					<Button onClick={handleCreateWallet}>
 						<Plus className="h-4 w-4 ml-2" />
 						کیف پول جدید
 					</Button>
@@ -127,7 +156,7 @@ export default function WalletsPage() {
 				{/* Search and Total Balance */}
 				<Card>
 					<CardContent className="p-4">
-						<div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+						<div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between px-5">
 							<div className="flex flex-1 gap-4 w-full md:w-auto">
 								<div className="relative flex-1 max-w-md">
 									<Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -199,7 +228,7 @@ export default function WalletsPage() {
 							<p className="text-muted-foreground mb-4 text-center">
 								برای شروع، اولین کیف پول خود را ایجاد کنید
 							</p>
-							<Button onClick={() => router.push("/wallets/create")}>
+							<Button onClick={handleCreateWallet}>
 								<Plus className="h-4 w-4 ml-2" />
 								ایجاد کیف پول جدید
 							</Button>
@@ -231,33 +260,46 @@ export default function WalletsPage() {
 						{filteredWallets.map((wallet) => (
 							<Card
 								key={wallet.id}
-								className="hover:shadow-md transition-shadow cursor-pointer"
+								className="hover:shadow-md transition-shadow cursor-pointer "
 							>
-								<CardContent className="p-4 space-y-4">
+								<CardContent className="py-3 px-5 space-y-6">
 									{/* Header */}
 									<div className="flex items-center justify-between">
 										<Link
-											href={`/wallets/${wallet.id}`}
+											href={`/wallets/${wallet.publicId}`}
 											className="flex items-center gap-2"
 										>
 											<WalletIcon className="h-5 w-5 text-primary" />
-											<span className="font-medium">
-												{wallet.name || `کیف پول ${wallet.id}`}
-											</span>
+											<span className="font-medium">{wallet.publicId}</span>
 										</Link>
-										{wallet.id === 1 && (
+										<button
+											onClick={() =>
+												handleSetPrimary(wallet.id, !!wallet.primary)
+											}
+											className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer"
+										>
 											<Badge
 												variant="secondary"
-												className="flex items-center gap-1"
+												className={`flex items-center gap-1 ${
+													wallet.primary
+														? "bg-yellow-100 text-yellow-800 border-yellow-300"
+														: ""
+												}`}
 											>
-												<Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-												پیش‌فرض
+												<Star
+													className={`h-3 w-3 ${
+														wallet.primary
+															? "fill-yellow-500 text-yellow-500"
+															: "text-muted-foreground"
+													}`}
+												/>
+												{wallet.primary ? "اصلی" : "انتخاب"}
 											</Badge>
-										)}
+										</button>
 									</div>
 
 									{/* Balance */}
-									<Link href={`/wallets/${wallet.id}`}>
+									<Link href={`/wallets/${wallet.publicId}`}>
 										<div className="text-2xl font-bold">
 											{formatCurrency(wallet.balance)}
 										</div>
@@ -304,7 +346,7 @@ export default function WalletsPage() {
 											</DropdownMenuTrigger>
 											<DropdownMenuContent align="end">
 												<DropdownMenuItem asChild>
-													<Link href={`/wallets/${wallet.id}`}>
+													<Link href={`/wallets/${wallet.publicId}`}>
 														<Eye className="h-4 w-4 ml-2" />
 														مشاهده جزئیات
 													</Link>

@@ -89,6 +89,7 @@ model Wallet {
   id        Int      @id @default(autoincrement())
   publicId  String   @unique @default(cuid())
   balance   Decimal  @db.Decimal(18, 2)
+  primary   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -18,10 +18,21 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { transferFunds } from "@/lib/api/wallet";
+import {
+	transferFunds,
+	transferFundsByPublicId,
+	getWalletByPublicId,
+} from "@/lib/api/wallet";
 import type { Wallet } from "@/types/wallet";
 import { formatCurrency } from "@/lib/format";
-import { ArrowUpDown, Loader2, AlertTriangle } from "lucide-react";
+import {
+	ArrowUpDown,
+	Loader2,
+	AlertTriangle,
+	Wallet as WalletIcon,
+	Users,
+} from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 interface TransferModalProps {
 	isOpen: boolean;
@@ -38,17 +49,25 @@ export function TransferModal({
 	wallets,
 	onSuccess,
 }: TransferModalProps) {
-	const [fromWalletId, setFromWalletId] = useState<string>(
-		wallet?.id.toString() || "",
-	);
+	const [fromWalletId, setFromWalletId] = useState<string>("");
 	const [toWalletId, setToWalletId] = useState("");
 	const [amount, setAmount] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+	// P2P mode state
+	const [isP2PMode, setIsP2PMode] = useState(false);
+	const [recipientPublicId, setRecipientPublicId] = useState("");
+
+	// Sync fromWalletId when wallet prop changes
+	useEffect(() => {
+		if (wallet && isOpen) {
+			setFromWalletId(wallet.id.toString());
+		}
+	}, [wallet, isOpen]);
+
 	// Get selected wallet
 	const fromWallet = wallets.find((w) => w.id.toString() === fromWalletId);
-	const toWallet = wallets.find((w) => w.id.toString() === toWalletId);
 
 	// Filter out the source wallet from destination options
 	const availableDestinationWallets = wallets.filter(
@@ -60,14 +79,16 @@ export function TransferModal({
 	const canTransfer =
 		fromWallet && transferAmount <= parseFloat(fromWallet.balance);
 
-	// Reset state when modal opens
+	// Reset state when modal opens/closes
 	const handleOpenChange = (open: boolean) => {
 		if (!open) {
 			onClose();
-			setFromWalletId(wallet?.id.toString() || "");
+			setFromWalletId("");
 			setToWalletId("");
 			setAmount("");
 			setError(null);
+			setIsP2PMode(false);
+			setRecipientPublicId("");
 		} else if (wallet) {
 			setFromWalletId(wallet.id.toString());
 		}
@@ -81,14 +102,30 @@ export function TransferModal({
 			return;
 		}
 
-		if (!toWalletId) {
-			setError("لطفا کیف پول مقصد را انتخاب کنید");
-			return;
-		}
+		// Validation for Own Wallets mode
+		if (!isP2PMode) {
+			if (!toWalletId) {
+				setError("لطفا کیف پول مقصد را انتخاب کنید");
+				return;
+			}
 
-		if (fromWalletId === toWalletId) {
-			setError("کیف پول مبدا و مقصد نمی‌توانند یکسان باشند");
-			return;
+			if (fromWalletId === toWalletId) {
+				setError("کیف پول مبدا و مقصد نمی‌توانند یکسان باشند");
+				return;
+			}
+		} else {
+			// Validation for P2P mode
+			if (!recipientPublicId || recipientPublicId.trim() === "") {
+				setError("لطفا شناسه کیف پول گیرنده را وارد کنید");
+				return;
+			}
+
+			// Basic publicId format validation (alphanumeric, 6-50 characters)
+			const publicIdRegex = /^[a-zA-Z0-9_-]{6,50}$/;
+			if (!publicIdRegex.test(recipientPublicId.trim())) {
+				setError("فرمت شناسه کیف پول نامعتبر است");
+				return;
+			}
 		}
 
 		const amountNum = parseFloat(amount);
@@ -105,11 +142,37 @@ export function TransferModal({
 		try {
 			setIsLoading(true);
 			setError(null);
-			await transferFunds(
-				parseInt(fromWalletId),
-				parseInt(toWalletId),
-				amountNum,
-			);
+
+			if (isP2PMode) {
+				// P2P transfer - resolve publicId to wallet ID first
+				try {
+					const { wallet: recipientWallet } = await getWalletByPublicId(
+						recipientPublicId.trim(),
+					);
+
+					// Use the resolved wallet ID for the transfer
+					await transferFunds(
+						parseInt(fromWalletId),
+						recipientWallet.id,
+						amountNum,
+					);
+				} catch (resolveErr) {
+					// If publicId resolution fails, show specific error
+					setError(
+						resolveErr instanceof Error
+							? resolveErr.message
+							: "شناسه کیف پول گیرنده نامعتبر است",
+					);
+					setIsLoading(false);
+					return;
+				}
+			} else {
+				await transferFunds(
+					parseInt(fromWalletId),
+					parseInt(toWalletId),
+					amountNum,
+				);
+			}
 			onSuccess?.();
 			onClose();
 		} catch (err) {
@@ -150,25 +213,60 @@ export function TransferModal({
 						</Select>
 					</div>
 
+					{/* Transfer Mode Toggle */}
+					<div className="flex items-center justify-between bg-muted p-3 rounded-lg">
+						<div className="flex items-center gap-2">
+							{isP2PMode ? (
+								<Users className="h-4 w-4 text-blue-600" />
+							) : (
+								<WalletIcon className="h-4 w-4 text-green-600" />
+							)}
+							<span className="text-sm font-medium">
+								{isP2PMode ? "انتقال P2P" : "انتقال به کیف پول خود"}
+							</span>
+						</div>
+						<Switch
+							checked={isP2PMode}
+							onCheckedChange={(checked) => {
+								setIsP2PMode(checked);
+								setToWalletId("");
+								setRecipientPublicId("");
+								setError(null);
+							}}
+						/>
+					</div>
+
 					{/* Destination Wallet Selection */}
 					<div className="space-y-2">
-						<label className="text-sm font-medium">کیف پول مقصد</label>
-						<Select
-							value={toWalletId}
-							onValueChange={setToWalletId}
-							disabled={availableDestinationWallets.length === 0}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="انتخاب کیف پول مقصد" />
-							</SelectTrigger>
-							<SelectContent>
-								{availableDestinationWallets.map((w) => (
-									<SelectItem key={w.id} value={w.id.toString()}>
-										{w.name || `کیف پول ${w.id}`}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<label className="text-sm font-medium">
+							{isP2PMode ? "شناسه کیف پول گیرنده" : "کیف پول مقصد"}
+						</label>
+						{isP2PMode ? (
+							<Input
+								type="text"
+								placeholder="شناسه کیف پول گیرنده را وارد کنید"
+								value={recipientPublicId}
+								onChange={(e) => setRecipientPublicId(e.target.value)}
+								dir="ltr"
+							/>
+						) : (
+							<Select
+								value={toWalletId}
+								onValueChange={setToWalletId}
+								disabled={availableDestinationWallets.length === 0}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="انتخاب کیف پول مقصد" />
+								</SelectTrigger>
+								<SelectContent>
+									{availableDestinationWallets.map((w) => (
+										<SelectItem key={w.id} value={w.id.toString()}>
+											{w.name || `کیف پول ${w.id}`}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						)}
 					</div>
 
 					{/* Amount Input */}
@@ -241,7 +339,11 @@ export function TransferModal({
 						<Button
 							type="submit"
 							disabled={
-								isLoading || !fromWalletId || !toWalletId || !canTransfer
+								isLoading ||
+								!fromWalletId ||
+								(!isP2PMode && !toWalletId) ||
+								(isP2PMode && !recipientPublicId) ||
+								!canTransfer
 							}
 						>
 							{isLoading && <Loader2 className="h-4 w-4 ml-2 animate-spin" />}

@@ -5,13 +5,10 @@ export const createWalletForUser = async (userId: number) => {
 	// Check if user already has a wallet
 	const existingWallets = await walletRepository.findWalletsByUserId(userId);
 
-	if (existingWallets.length > 0) {
-		// User already has wallet(s), return existing primary wallet
-		// For now, allow multiple wallets per user (e.g., savings, checking)
-		// You might want to add a "isPrimary" field later
-	}
+	// If this is the first wallet, set it as primary
+	const isFirstWallet = existingWallets.length === 0;
 
-	const wallet = await walletRepository.createWallet(userId, 0);
+	const wallet = await walletRepository.createWallet(userId, 0, isFirstWallet);
 	return wallet;
 };
 
@@ -110,5 +107,30 @@ export const getWalletBalance = async (walletId: number) => {
 		walletId: wallet.id,
 		publicId: wallet.publicId,
 		balance: wallet.balance,
+	};
+};
+
+// Set a wallet as primary for the user
+export const setPrimaryWallet = async (userId: number, walletId: number) => {
+	// Check if wallet exists and belongs to the user
+	const wallet = await walletRepository.findWalletById(walletId);
+
+	if (!wallet) {
+		throw new Error("Wallet not found");
+	}
+
+	if (wallet.userId !== userId) {
+		throw new Error("Wallet does not belong to this user");
+	}
+
+	// Use repository method with transaction
+	const updatedWallet = await walletRepository.setPrimaryWallet(
+		userId,
+		walletId,
+	);
+
+	return {
+		wallet: updatedWallet,
+		message: "Wallet set as primary successfully",
 	};
 };

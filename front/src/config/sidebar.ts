@@ -43,12 +43,6 @@ export const navItems: NavItem[] = [
 				icon: Wallet,
 				href: "/wallets",
 			},
-			{
-				key: "create-wallet",
-				name: "ایجاد کیف پول جدید",
-				icon: PlusCircle,
-				href: "/wallets/create",
-			},
 		],
 		href: "",
 	},

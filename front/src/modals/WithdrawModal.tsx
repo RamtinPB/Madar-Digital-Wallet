@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -38,12 +38,17 @@ export function WithdrawModal({
 	wallets,
 	onSuccess,
 }: WithdrawModalProps) {
-	const [selectedWalletId, setSelectedWalletId] = useState<string>(
-		wallet?.id.toString() || "",
-	);
+	const [selectedWalletId, setSelectedWalletId] = useState<string>("");
 	const [amount, setAmount] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+
+	// Sync selectedWalletId when wallet prop changes
+	useEffect(() => {
+		if (wallet && isOpen) {
+			setSelectedWalletId(wallet.id.toString());
+		}
+	}, [wallet, isOpen]);
 
 	// Get selected wallet
 	const selectedWallet = wallets.find(
@@ -55,11 +60,11 @@ export function WithdrawModal({
 	const canWithdraw =
 		selectedWallet && withdrawalAmount <= parseFloat(selectedWallet.balance);
 
-	// Reset state when modal opens
+	// Reset state when modal opens/closes
 	const handleOpenChange = (open: boolean) => {
 		if (!open) {
 			onClose();
-			setSelectedWalletId(wallet?.id.toString() || "");
+			setSelectedWalletId("");
 			setAmount("");
 			setError(null);
 		} else if (wallet) {
