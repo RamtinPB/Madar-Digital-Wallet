@@ -40,7 +40,7 @@ export function WalletSelector({
 	}
 
 	return (
-		<Select value={selectedWalletId || ""} onValueChange={onSelect}>
+		<Select dir="rtl" value={selectedWalletId || ""} onValueChange={onSelect}>
 			<SelectTrigger className="w-full">
 				<SelectValue placeholder="انتخاب کیف‌ پول" />
 			</SelectTrigger>
