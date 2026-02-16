@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { ProductCard, type Product } from "@/components/business";
-import { PurchaseModal } from "@/components/shared/PurchaseModal";
+import { PurchaseModal } from "@/components/shared/modals/PurchaseModal";
 import { getUserWallets } from "@/lib/api/wallet";
 import type { Wallet } from "@/types/wallet";
 import { toast } from "sonner";
+import { displayTransactionSuccess } from "@/components/shared/toasts/useTransactionSonner";
 import { ShoppingCart } from "lucide-react";
 
 // Mock product data - in real app, this would come from backend
@@ -56,8 +57,15 @@ export default function BusinessPage() {
 	};
 
 	// Handle purchase success
-	const handlePurchaseSuccess = () => {
-		toast.success("خرید با موفقیت انجام شد");
+	const handlePurchaseSuccess = (transaction: {
+		publicId: string;
+		amount: string;
+	}) => {
+		displayTransactionSuccess({
+			publicId: transaction.publicId,
+			amount: Number(transaction.amount),
+			transactionType: "PURCHASE",
+		});
 	};
 
 	return (

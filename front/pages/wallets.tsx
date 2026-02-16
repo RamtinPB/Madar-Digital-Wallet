@@ -42,7 +42,7 @@ import {
 	DepositModal,
 	WithdrawModal,
 	TransferModal,
-} from "@/components/shared/transactions.index";
+} from "@/components/shared/modals/transactions.modals.export";
 
 export default function WalletsPage() {
 	const router = useRouter();
@@ -269,13 +269,10 @@ export default function WalletsPage() {
 								<CardContent className="py-3 px-5 space-y-6">
 									{/* Header */}
 									<div className="flex items-center justify-between">
-										<Link
-											href={`/wallets/${wallet.publicId}`}
-											className="flex items-center gap-2"
-										>
+										<div className="flex items-center gap-2 cursor-auto">
 											<WalletIcon className="h-5 w-5 text-primary" />
 											<span className="font-medium">{wallet.publicId}</span>
-										</Link>
+										</div>
 										<button
 											onClick={() =>
 												handleSetPrimary(wallet.id, !!wallet.primary)

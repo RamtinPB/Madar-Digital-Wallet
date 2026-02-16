@@ -23,7 +23,7 @@ import { Phone, Eye, EyeClosed, Clock, Edit } from "lucide-react";
 
 import { useLoginStages } from "@/components/login/hooks/useLoginStages";
 import { useOTPCountdown } from "@/components/login/hooks/useOTPCountdown";
-import { useOTPSonner } from "@/toasts/useOTPSonner";
+import { useOTPSonner } from "@/components/shared/toasts/useOTPSonner";
 import { formatTime } from "@/components/login/utils/formatTime";
 
 import { requestOtp, login as apiLogin, setAccessToken } from "@/lib/api/auth";
@@ -147,7 +147,11 @@ export default function LoginPage() {
 		}
 	};
 
-	const handleChange = (value: string) => { const codeArray = value.padEnd(6, "").split(""); setCode(codeArray); setCodeValue("code", codeArray); };
+	const handleChange = (value: string) => {
+		const codeArray = value.padEnd(6, "").split("");
+		setCode(codeArray);
+		setCodeValue("code", codeArray);
+	};
 
 	// Check validity for button state
 	const isValidPhone = /^09\d{9}$/.test(watchedPhone || "");
@@ -356,4 +360,3 @@ export default function LoginPage() {
 		</div>
 	);
 }
-

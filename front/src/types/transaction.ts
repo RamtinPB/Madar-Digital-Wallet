@@ -98,6 +98,7 @@ export const transactionTypeOptions = [
 	{ value: "DEPOSIT", label: "واریز" },
 	{ value: "WITHDRAW", label: "برداشت" },
 	{ value: "REFUND", label: "بازگشت" },
+	{ value: "ADMIN_ADJUSTMENT", label: "تعدیل" },
 ];
 
 export const transactionStatusOptions = [

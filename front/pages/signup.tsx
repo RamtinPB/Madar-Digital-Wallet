@@ -31,7 +31,7 @@ import { FieldErrors } from "react-hook-form";
 
 import { useLoginStages } from "@/components/login/hooks/useLoginStages";
 import { useOTPCountdown } from "@/components/login/hooks/useOTPCountdown";
-import { useOTPSonner } from "@/toasts/useOTPSonner";
+import { useOTPSonner } from "@/components/shared/toasts/useOTPSonner";
 import { formatTime } from "@/components/login/utils/formatTime";
 
 import {
@@ -294,7 +294,11 @@ export default function SignupPage() {
 									<InputOTP
 										maxLength={6}
 										value={code.join("")}
-										onChange={(value: string) => { const codeArray = value.padEnd(6, "").split(""); setCode(codeArray); setCodeValue("code", codeArray); }}
+										onChange={(value: string) => {
+											const codeArray = value.padEnd(6, "").split("");
+											setCode(codeArray);
+											setCodeValue("code", codeArray);
+										}}
 									>
 										<InputOTPGroup>
 											<InputOTPSlot index={0} />
@@ -389,5 +393,3 @@ export default function SignupPage() {
 		</div>
 	);
 }
-
-

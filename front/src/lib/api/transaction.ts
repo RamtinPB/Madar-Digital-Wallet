@@ -85,3 +85,70 @@ export async function getTransactionByPublicId(
 
 	return response.json();
 }
+
+// Purchase from business
+export const purchaseFromBusiness = async (data: {
+	fromWalletId: number;
+	amount: number;
+	otpCode: string;
+	productName?: string;
+	productId?: string;
+}): Promise<{
+	transaction: TransactionWithDetails;
+	message: string;
+}> => {
+	const response = await authenticatedFetch(
+		`${API_BASE}/transaction/purchase`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(data),
+		},
+	);
+
+	if (!response.ok) {
+		let errMsg = "Failed to process purchase";
+		try {
+			const body = await response.json();
+			errMsg = body?.error || errMsg;
+		} catch (e) {}
+		throw new Error(errMsg);
+	}
+
+	return response.json();
+};
+
+// Get transaction receipt
+export const getTransactionReceipt = async (
+	transactionId: number,
+): Promise<{
+	transaction: TransactionWithDetails;
+	receipt: {
+		publicId: string;
+		amount: number;
+		type: string;
+		date: string;
+		description?: string;
+		metadata?: Record<string, unknown>;
+	};
+}> => {
+	const response = await authenticatedFetch(
+		`${API_BASE}/transaction/${transactionId}/receipt`,
+		{
+			method: "GET",
+		},
+	);
+
+	if (!response.ok) {
+		let errMsg = "Failed to fetch receipt";
+		try {
+			const body = await response.json();
+			errMsg = body?.error || errMsg;
+		} catch (e) {}
+		throw new Error(errMsg);
+	}
+
+	return response.json();
+};

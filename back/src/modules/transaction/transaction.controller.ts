@@ -186,3 +186,68 @@ export const getUserTransactions = async (ctx: any) => {
 		return { error: err.message || "Failed to get transactions" };
 	}
 };
+
+// Purchase from business
+export const purchase = async (ctx: any) => {
+	const body = await ctx.body;
+	const { fromWalletId, amount, otpCode, productName, productId } = body;
+	const userId = ctx.user.id;
+
+	if (!fromWalletId || !amount || !otpCode) {
+		ctx.set.status = 400;
+		return { error: "fromWalletId, amount, and otpCode are required" };
+	}
+
+	try {
+		const result = await transactionService.purchaseFromBusiness(
+			parseInt(fromWalletId),
+			parseFloat(amount),
+			otpCode,
+			userId,
+			productName,
+			productId,
+		);
+		return result;
+	} catch (err: any) {
+		ctx.set.status = 400;
+		return { error: err.message || "Purchase failed" };
+	}
+};
+
+// Get transaction receipt
+export const getReceipt = async (ctx: any) => {
+	const transactionId = parseInt(ctx.params.id);
+
+	if (isNaN(transactionId)) {
+		ctx.set.status = 400;
+		return { error: "Invalid transaction ID" };
+	}
+
+	try {
+		const transaction = await transactionService.getTransaction(transactionId);
+
+		if (!transaction) {
+			ctx.set.status = 404;
+			return { error: "Transaction not found" };
+		}
+
+		// Cast to any to access description and metadata fields (if present in DB)
+		const tx = transaction as any;
+
+		// Format as receipt
+		return {
+			transaction,
+			receipt: {
+				publicId: transaction.publicId,
+				amount: transaction.amount,
+				type: transaction.transactionType,
+				date: transaction.createdAt,
+				description: tx.description || null,
+				metadata: tx.metadata || null,
+			},
+		};
+	} catch (err: any) {
+		ctx.set.status = 404;
+		return { error: err.message || "Transaction not found" };
+	}
+};

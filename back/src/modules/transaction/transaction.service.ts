@@ -1,4 +1,5 @@
 import * as transactionRepository from "./transaction.repository";
+import * as authRepository from "../auth/auth.repository";
 import { prisma } from "../../infrastructure/db/prisma.client";
 
 // Helper function to verify wallet ownership
@@ -16,6 +17,56 @@ const verifyWalletOwnership = async (walletId: number, userId: number) => {
 	}
 
 	return wallet;
+};
+
+// TEMPORARY: Find first BUSINESS user
+// TODO: Replace with proper business merchant lookup (config, cached, or dedicated endpoint)
+const findBusinessUser = async () => {
+	const businessUser = await prisma.user.findFirst({
+		where: { userType: "BUSINESS" },
+		include: { wallets: true },
+	});
+
+	if (!businessUser) {
+		throw new Error("No business user configured");
+	}
+
+	// Find primary wallet, fallback to first wallet
+	const primaryWallet = businessUser.wallets.find((w) => w.primary);
+	const targetWallet = primaryWallet || businessUser.wallets[0];
+
+	if (!targetWallet) {
+		throw new Error("Business user has no wallet");
+	}
+
+	return {
+		user: businessUser,
+		wallet: targetWallet,
+	};
+};
+
+// Verify OTP for transaction
+const verifyOTP = async (
+	phoneNumber: string,
+	otpCode: string,
+): Promise<boolean> => {
+	// Find valid OTP for VERIFY_TRANSACTION purpose
+	const otpRow = await authRepository.findValidOTP(phoneNumber);
+	if (!otpRow) {
+		throw new Error("No valid OTP found or OTP expired");
+	}
+
+	// Compare OTP using bcrypt
+	const bcrypt = await import("bcryptjs");
+	const match = await bcrypt.default.compare(otpCode, otpRow.codeHash);
+	if (!match) {
+		throw new Error("Invalid OTP code");
+	}
+
+	// Consume the OTP
+	await authRepository.consumeOTP(otpRow.id);
+
+	return true;
 };
 
 // Transfer funds between two wallets
@@ -234,6 +285,133 @@ export const depositFunds = async (
 	return {
 		transaction: result,
 		message: `Successfully deposited ${amount} to wallet`,
+	};
+};
+
+// Purchase from business user (product/service payment)
+export const purchaseFromBusiness = async (
+	fromWalletId: number,
+	amount: number,
+	otpCode: string,
+	userId: number,
+	productName?: string,
+	productId?: string,
+) => {
+	// Validate amount
+	if (amount <= 0) {
+		throw new Error("Amount must be greater than 0");
+	}
+
+	if (!otpCode) {
+		throw new Error("OTP code is required");
+	}
+
+	// 1. Verify wallet ownership and get user info
+	const wallet = await prisma.wallet.findUnique({
+		where: { id: fromWalletId },
+		include: { user: { select: { phoneNumber: true } } },
+	});
+
+	if (!wallet) {
+		throw new Error("Wallet not found");
+	}
+
+	if (wallet.userId !== userId) {
+		throw new Error("Not authorized to access this wallet");
+	}
+
+	// 2. Verify OTP (get user's phone number from wallet)
+	if (!wallet.user.phoneNumber) {
+		throw new Error("User phone number not found");
+	}
+	await verifyOTP(wallet.user.phoneNumber, otpCode);
+
+	// 3. Check wallet balance
+	if (Number(wallet.balance) < amount) {
+		throw new Error("Insufficient balance");
+	}
+
+	// 4. Find business user and wallet
+	const business = await findBusinessUser();
+
+	// 5. Create transaction with atomic operation
+	const transaction = await prisma.$transaction(async (tx) => {
+		// Get current balance for ledger entries
+		const currentPayerWallet = await tx.wallet.findUnique({
+			where: { id: fromWalletId },
+		});
+		const currentReceiverWallet = await tx.wallet.findUnique({
+			where: { id: business.wallet.id },
+		});
+
+		if (!currentPayerWallet || !currentReceiverWallet) {
+			throw new Error("Wallet not found");
+		}
+
+		// Deduct from payer
+		await tx.wallet.update({
+			where: { id: fromWalletId },
+			data: { balance: { decrement: amount } },
+		});
+
+		// Add to receiver (business)
+		await tx.wallet.update({
+			where: { id: business.wallet.id },
+			data: { balance: { increment: amount } },
+		});
+
+		// Build transaction data based on available fields
+		const txData: any = {
+			status: "COMPLETED",
+			transactionType: "PURCHASE",
+			amount,
+			payerWalletId: fromWalletId,
+			receiverWalletId: business.wallet.id,
+		};
+
+		// Add description if provided
+		if (productName) {
+			txData.description = productName;
+		}
+
+		// Add metadata if provided
+		if (productId) {
+			txData.metadata = { productId };
+		}
+
+		// Create transaction record
+		const txRecord = await tx.transaction.create({
+			data: txData,
+			include: {
+				payerWallet: { include: { user: true } },
+				receiverWallet: { include: { user: true } },
+			},
+		});
+
+		// Create ledger entries
+		await tx.ledgerEntry.createMany({
+			data: [
+				{
+					walletId: fromWalletId,
+					transactionId: txRecord.id,
+					type: "PURCHASE",
+					amount: -amount,
+				},
+				{
+					walletId: business.wallet.id,
+					transactionId: txRecord.id,
+					type: "PURCHASE",
+					amount,
+				},
+			],
+		});
+
+		return txRecord;
+	});
+
+	return {
+		transaction,
+		message: "Purchase completed successfully",
 	};
 };
 

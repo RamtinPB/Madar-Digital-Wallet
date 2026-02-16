@@ -24,7 +24,7 @@ export function QuickActions({
 						className="flex flex-col items-center gap-1 h-auto py-3"
 						onClick={onDeposit}
 					>
-						<ArrowDown className="h-5 w-5 text-green-600" />
+						<ArrowDown className="h-5 w-5 text-green-700" />
 						<span className="text-sm">افزایش موجودی</span>
 					</Button>
 					<Button
@@ -48,7 +48,7 @@ export function QuickActions({
 						className="flex flex-col items-center gap-1 h-auto py-3"
 						onClick={onCreateWallet}
 					>
-						<Plus className="h-5 w-5 text-amber-400" />
+						<Plus className="h-5 w-5 text-amber-500" />
 						<span className="text-sm">کیف‌ پول جدید</span>
 					</Button>
 				</div>

@@ -116,6 +116,8 @@ model Transaction {
   payerWalletId    Int
   receiverWalletId Int?
   createdAt        DateTime          @default(now())
+  description      String? // For product name, merchant info, etc.
+  metadata         Json? // For flexible storage of receipt-specific data
 
   // Two separate relations to Wallet (for payer and receiver)
   payerWallet    Wallet  @relation("PayerWallet", fields: [payerWalletId], references: [id])

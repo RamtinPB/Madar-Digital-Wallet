@@ -15,12 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { DirectionProvider } from "@/components/ui/direction";
 import { SharedWalletSelector } from "@/components/shared/WalletSelector";
-import { useOTPSonner } from "@/toasts/useOTPSonner";
+import { purchaseFromBusiness } from "@/lib/api/transaction";
+import { useOTPSonner } from "@/components/shared/toasts/useOTPSonner";
 import { useOTPCountdown } from "@/components/login/hooks/useOTPCountdown";
 import { formatTime } from "@/components/login/utils/formatTime";
 import { formatCurrency } from "@/lib/format";
 import type { Wallet } from "@/types/wallet";
 import type { Product } from "@/components/business/ProductCard";
+import type { TransactionWithDetails } from "@/types/transaction";
 import {
 	ShoppingCart,
 	Loader2,
@@ -36,7 +38,7 @@ interface PurchaseModalProps {
 	onClose: () => void;
 	product: Product | null;
 	wallets: Wallet[];
-	onSuccess?: () => void;
+	onSuccess?: (transaction: TransactionWithDetails) => void;
 }
 
 // Mock business user data - in real app, fetch from backend
@@ -149,24 +151,17 @@ export function PurchaseModal({
 			setIsLoading(true);
 			setError(null);
 
-			// In a real implementation, this would call the backend purchase endpoint
-			// For now, we'll simulate the purchase with a delay
-			// The backend would:
-			// 1. Verify OTP
-			// 2. Check wallet balance
-			// 3. Deduct from sender wallet
-			// 4. Add to business wallet (with fee)
-			// 5. Create transaction record
-			// 6. Return result
+			// Call the real purchase API
+			const result = await purchaseFromBusiness({
+				fromWalletId: parseInt(selectedWalletId, 10),
+				amount: total,
+				otpCode: otpCode,
+				productName: product.name,
+				productId: product.id,
+			});
 
-			// Simulate API call
-			await new Promise((resolve) => setTimeout(resolve, 2000));
-
-			// For demo purposes, simulate success
-			// In real app: await purchaseProduct(fromWalletId, toUserId, amount, fee, product.id, otpCode);
-
-			// Show success
-			onSuccess?.();
+			// Pass the transaction data to the parent component
+			onSuccess?.(result.transaction);
 			handleOpenChange(false);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "خطا در پرداخت");

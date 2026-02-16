@@ -62,4 +62,25 @@ export function registerTransactionRoutes(appInstance: typeof app) {
 	appInstance.get("/transactions", transactionController.getUserTransactions, {
 		beforeHandle: requireAuth,
 	});
+
+	// Purchase from business
+	appInstance.post("/transaction/purchase", transactionController.purchase, {
+		beforeHandle: requireAuth,
+		body: t.Object({
+			fromWalletId: t.Number(),
+			amount: t.Number({ minimum: 1 }),
+			otpCode: t.String(),
+			productName: t.Optional(t.String()),
+			productId: t.Optional(t.String()),
+		}),
+	});
+
+	// Get transaction receipt
+	appInstance.get(
+		"/transaction/:id/receipt",
+		transactionController.getReceipt,
+		{
+			beforeHandle: requireAuth,
+		},
+	);
 }

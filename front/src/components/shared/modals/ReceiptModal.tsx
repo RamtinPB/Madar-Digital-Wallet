@@ -104,7 +104,10 @@ export function ReceiptModal({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-			<DialogContent className="sm:max-w-md" dir="rtl">
+			<DialogContent
+				className="sm:max-w-md [&>button]:left-4 [&>button]:right-auto"
+				dir="rtl"
+			>
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
 						<span className="text-2xl">🧾</span>

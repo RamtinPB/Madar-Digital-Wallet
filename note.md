@@ -2,7 +2,7 @@ make sure all relevant form like pages use react hook form and zod and reslover 
 
 make sure all the pages and components of this project align with the persian language.
 
-morrow:
-implement [text](front/plans/transactions-page-ui.md) done
-then update [text](front/plans/conclusion-plan.md) after
-then implement the new [text](front/plans/conclusion-plan.md)
+make receipt modal have y axis scrollability so it stays in the browser frame
+
+make sure all transactions, including but not limited to p2p and between user's own wallets transfer, deposit, and withdraw use the useTransactionSonner.tsx
+similar to how a business purchase works and also have a link/button to the coresponding transaction's receipt (its receipt model should open).
