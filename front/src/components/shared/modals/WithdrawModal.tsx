@@ -99,7 +99,13 @@ export function WithdrawModal({
 		try {
 			setIsLoading(true);
 			setError(null);
-			await withdrawFromWallet(parseInt(selectedWalletId), amountNum);
+			const wallet = wallets.find((w) => w.id.toString() === selectedWalletId);
+			const description = `برداشت از کیف پول ${wallet?.publicId || ""}`;
+			await withdrawFromWallet(
+				parseInt(selectedWalletId),
+				amountNum,
+				description,
+			);
 			onSuccess?.();
 			onClose();
 		} catch (err) {

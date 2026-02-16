@@ -76,6 +76,7 @@ export const transferFunds = async (
 	amount: number,
 	userId: number,
 	transferType: "OWN_WALLET" | "P2P" = "P2P",
+	description?: string,
 ) => {
 	// Validate amount
 	if (amount <= 0) {
@@ -115,6 +116,11 @@ export const transferFunds = async (
 				transactionType: "TRANSFER",
 				transferType,
 				status: "COMPLETED",
+				description:
+					description ||
+					(transferType === "P2P"
+						? "انتقال P2P"
+						: "انتقال بین کیف پول‌های خود"),
 			},
 		});
 
@@ -172,6 +178,7 @@ export const withdrawFunds = async (
 	walletId: number,
 	amount: number,
 	userId: number,
+	description?: string,
 ) => {
 	// Validate amount
 	if (amount <= 0) {
@@ -200,6 +207,7 @@ export const withdrawFunds = async (
 				amount,
 				transactionType: "WITHDRAW",
 				status: "COMPLETED",
+				description: description || "برداشت از کیف پول",
 			},
 		});
 
@@ -237,6 +245,7 @@ export const depositFunds = async (
 	walletId: number,
 	amount: number,
 	userId: number,
+	description?: string,
 ) => {
 	// Validate amount
 	if (amount <= 0) {
@@ -256,6 +265,7 @@ export const depositFunds = async (
 				amount,
 				transactionType: "DEPOSIT",
 				status: "COMPLETED",
+				description: description || "واریز به کیف پول",
 			},
 		});
 

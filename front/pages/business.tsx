@@ -9,6 +9,8 @@ import type { Wallet } from "@/types/wallet";
 import { toast } from "sonner";
 import { displayTransactionSuccess } from "@/components/shared/toasts/useTransactionSonner";
 import { ShoppingCart } from "lucide-react";
+import { ReceiptModal } from "@/components/transactions";
+import type { TransactionWithDetails } from "@/types/transaction";
 
 // Mock product data - in real app, this would come from backend
 const MOCK_PRODUCT: Product = {
@@ -26,6 +28,9 @@ export default function BusinessPage() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [selectedTransaction, setSelectedTransaction] =
+		useState<TransactionWithDetails | null>(null);
+	const [showReceiptModal, setShowReceiptModal] = useState(false);
 
 	// Fetch user wallets on mount
 	useEffect(() => {
@@ -57,15 +62,18 @@ export default function BusinessPage() {
 	};
 
 	// Handle purchase success
-	const handlePurchaseSuccess = (transaction: {
-		publicId: string;
-		amount: string;
-	}) => {
-		displayTransactionSuccess({
-			publicId: transaction.publicId,
-			amount: Number(transaction.amount),
-			transactionType: "PURCHASE",
-		});
+	const handlePurchaseSuccess = (transaction: TransactionWithDetails) => {
+		displayTransactionSuccess(
+			{
+				publicId: transaction.publicId,
+				amount: Number(transaction.amount),
+				transactionType: "PURCHASE",
+			},
+			() => {
+				setSelectedTransaction(transaction);
+				setShowReceiptModal(true);
+			},
+		);
 	};
 
 	return (
@@ -108,6 +116,16 @@ export default function BusinessPage() {
 				product={selectedProduct}
 				wallets={wallets}
 				onSuccess={handlePurchaseSuccess}
+			/>
+
+			{/* Receipt Modal */}
+			<ReceiptModal
+				transaction={selectedTransaction}
+				isOpen={showReceiptModal}
+				onClose={() => {
+					setShowReceiptModal(false);
+					setSelectedTransaction(null);
+				}}
 			/>
 		</MainLayout>
 	);

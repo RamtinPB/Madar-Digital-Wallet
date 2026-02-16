@@ -118,13 +118,14 @@ export async function createWallet(): Promise<{ wallet: Wallet }> {
 export async function depositToWallet(
 	walletId: number,
 	amount: number,
+	description?: string,
 ): Promise<{ transaction: Transaction }> {
 	const response = await authenticatedFetch(
 		`${API_BASE}/wallet/${walletId}/deposit`,
 		{
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ amount }),
+			body: JSON.stringify({ amount, description }),
 		},
 	);
 
@@ -144,13 +145,14 @@ export async function depositToWallet(
 export async function withdrawFromWallet(
 	walletId: number,
 	amount: number,
+	description?: string,
 ): Promise<{ transaction: Transaction }> {
 	const response = await authenticatedFetch(
 		`${API_BASE}/wallet/${walletId}/withdraw`,
 		{
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ amount }),
+			body: JSON.stringify({ amount, description }),
 		},
 	);
 
@@ -172,6 +174,7 @@ export async function transferFunds(
 	toWalletId: number,
 	amount: number,
 	transferType: "OWN_WALLET" | "P2P" = "P2P",
+	description?: string,
 ): Promise<{ transaction: Transaction }> {
 	const response = await authenticatedFetch(
 		`${API_BASE}/transaction/transfer`,
@@ -183,6 +186,7 @@ export async function transferFunds(
 				toWalletId,
 				amount,
 				transferType,
+				description,
 			}),
 		},
 	);

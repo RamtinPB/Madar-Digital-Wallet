@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { DirectionProvider } from "@/components/ui/direction";
 import { SharedWalletSelector } from "@/components/shared/WalletSelector";
 import { purchaseFromBusiness } from "@/lib/api/transaction";
+import { requestOtp } from "@/lib/api/auth";
 import { useOTPSonner } from "@/components/shared/toasts/useOTPSonner";
 import { useOTPCountdown } from "@/components/login/hooks/useOTPCountdown";
 import { formatTime } from "@/components/login/utils/formatTime";
@@ -124,12 +125,11 @@ export function PurchaseModal({
 			setIsSendingOtp(true);
 			setError(null);
 
-			// Simulate OTP API call - in real app, this would call the backend
-			// const { otp } = await requestOtp(phoneNumber, "VERIFY_TRANSACTION");
-			const mockOTP = Math.floor(100000 + Math.random() * 900000).toString();
+			// Call the backend API to generate and send OTP
+			const { otp } = await requestOtp(phoneNumber, "VERIFY_TRANSACTION");
 
-			// Display OTP via sonner (simulation)
-			displayOTP(mockOTP);
+			// Display OTP via sonner (for simulation purposes - in production, SMS would be sent)
+			displayOTP(otp);
 
 			setOtpSent(true);
 		} catch (err) {
@@ -152,11 +152,12 @@ export function PurchaseModal({
 			setError(null);
 
 			// Call the real purchase API
+			const description = `خرید از ${BUSINESS_SELLER.name}: ${product.nameFa || product.name}`;
 			const result = await purchaseFromBusiness({
 				fromWalletId: parseInt(selectedWalletId, 10),
 				amount: total,
 				otpCode: otpCode,
-				productName: product.name,
+				productName: description,
 				productId: product.id,
 			});
 

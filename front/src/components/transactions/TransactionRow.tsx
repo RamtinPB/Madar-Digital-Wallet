@@ -8,6 +8,8 @@ import {
 	Banknote,
 	Wallet,
 	HelpCircle,
+	ArrowDown,
+	ArrowUp,
 } from "lucide-react";
 import {
 	Table,
@@ -42,9 +44,9 @@ function getTransactionIcon(type: TransactionType) {
 		case "TRANSFER":
 			return <RefreshCw className="h-4 w-4" />;
 		case "DEPOSIT":
-			return <ArrowDownRight className="h-4 w-4" />;
+			return <ArrowDown className="h-4 w-4" />;
 		case "WITHDRAW":
-			return <ArrowUpRight className="h-4 w-4" />;
+			return <ArrowUp className="h-4 w-4" />;
 		case "REFUND":
 			return <Banknote className="h-4 w-4" />;
 		case "ADMIN_ADJUSTMENT":
@@ -82,16 +84,14 @@ export function TransactionRow({
 
 	// Get description/recipient info
 	let description = transaction.description || "";
-	if (
-		transaction.transactionType === "TRANSFER" &&
-		transaction.receiverWallet
-	) {
-		description = transaction.receiverWallet.user.phoneNumber;
-	} else if (
-		transaction.transactionType === "PURCHASE" &&
-		transaction.metadata?.sellerName
-	) {
-		description = transaction.metadata.sellerName;
+
+	// For transfers, show the transfer type and recipient info
+	if (transaction.transactionType === "TRANSFER") {
+		if (transaction.receiverWallet) {
+			description = `انتقال به: ${transaction.receiverWallet.publicId}`;
+		} else if (transaction.payerWallet) {
+			description = `انتقال از: ${transaction.payerWallet.publicId}`;
+		}
 	}
 
 	return (

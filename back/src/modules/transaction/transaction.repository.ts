@@ -30,7 +30,9 @@ export const findTransactionById = async (id: number) => {
 		where: { id },
 		include: {
 			payerWallet: {
-				include: {
+				select: {
+					id: true,
+					publicId: true,
 					user: {
 						select: {
 							id: true,
@@ -40,7 +42,9 @@ export const findTransactionById = async (id: number) => {
 				},
 			},
 			receiverWallet: {
-				include: {
+				select: {
+					id: true,
+					publicId: true,
 					user: {
 						select: {
 							id: true,
@@ -92,7 +96,9 @@ export const findTransactionsByWalletId = async (walletId: number) => {
 		},
 		include: {
 			payerWallet: {
-				include: {
+				select: {
+					id: true,
+					publicId: true,
 					user: {
 						select: {
 							id: true,
@@ -102,7 +108,9 @@ export const findTransactionsByWalletId = async (walletId: number) => {
 				},
 			},
 			receiverWallet: {
-				include: {
+				select: {
+					id: true,
+					publicId: true,
 					user: {
 						select: {
 							id: true,
@@ -227,7 +235,9 @@ export const findUserTransactions = async (
 		where,
 		include: {
 			payerWallet: {
-				include: {
+				select: {
+					id: true,
+					publicId: true,
 					user: {
 						select: {
 							id: true,
@@ -237,7 +247,9 @@ export const findUserTransactions = async (
 				},
 			},
 			receiverWallet: {
-				include: {
+				select: {
+					id: true,
+					publicId: true,
 					user: {
 						select: {
 							id: true,

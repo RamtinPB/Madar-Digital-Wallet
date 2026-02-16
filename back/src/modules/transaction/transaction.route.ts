@@ -11,6 +11,10 @@ export function registerTransactionRoutes(appInstance: typeof app) {
 			fromWalletId: t.Number(),
 			toWalletId: t.Number(),
 			amount: t.Number({ minimum: 1 }),
+			transferType: t.Optional(
+				t.Union([t.Literal("OWN_WALLET"), t.Literal("P2P")]),
+			),
+			description: t.Optional(t.String()),
 		}),
 	});
 

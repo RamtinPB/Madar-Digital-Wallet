@@ -17,7 +17,7 @@ import {
 	DepositModal,
 	WithdrawModal,
 	TransferModal,
-} from "@/components/shared/transactions.index";
+} from "@/components/shared/modals/transactions.modals.export";
 
 export default function Dashboard() {
 	const [wallets, setWallets] = useState<Wallet[]>([]);

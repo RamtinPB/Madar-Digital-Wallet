@@ -89,6 +89,7 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
 	if (!user) {
 		return (
 			<div
+				className="flex flex-col gap-3"
 				style={{
 					justifyContent: "center",
 					alignItems: "center",
@@ -98,6 +99,7 @@ export function AuthBootstrap({ children }: AuthBootstrapProps) {
 				}}
 			>
 				در حال انتقال به صفحه ورود...
+				<Helix size="45" speed="2.5" color="#FF6A29" />
 			</div>
 		);
 	}

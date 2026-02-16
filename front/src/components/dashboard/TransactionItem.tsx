@@ -26,7 +26,7 @@ function getTransactionIcon(type: Transaction["transactionType"]) {
 		case "TRANSFER":
 			return <ArrowLeftRight className="h-5 w-5 text-blue-600" />;
 		case "PURCHASE":
-			return <ShoppingCart className="h-5 w-5 text-orange-600" />;
+			return <ShoppingCart className="h-5 w-5 text-orange-400" />;
 		case "REFUND":
 			return <RefreshCcw className="h-5 w-5 text-purple-600" />;
 		case "ADMIN_ADJUSTMENT":
@@ -83,9 +83,9 @@ function getTransactionSubtitle(
 ): string {
 	if (transaction.transactionType === "TRANSFER") {
 		if (isPayer && transaction.receiverWallet) {
-			return `به: ${transaction.receiverWallet.user.phoneNumber}`;
+			return `به: ${transaction.receiverWallet.publicId}`;
 		} else if (!isPayer && transaction.payerWallet) {
-			return `از: ${transaction.payerWallet.user.phoneNumber}`;
+			return `از: ${transaction.payerWallet.publicId}`;
 		}
 	}
 	return "";

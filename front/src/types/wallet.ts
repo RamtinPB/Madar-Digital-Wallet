@@ -25,11 +25,13 @@ export interface Transaction {
 	receiverWalletId: number | null;
 	createdAt: string;
 	receiverWallet?: {
+		publicId: string;
 		user: {
 			phoneNumber: string;
 		};
 	};
 	payerWallet?: {
+		publicId: string;
 		user: {
 			phoneNumber: string;
 		};

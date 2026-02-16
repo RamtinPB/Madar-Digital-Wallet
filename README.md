@@ -14,6 +14,10 @@
 
 ---
 
+**Last Updated:** February 16, 2026
+
+---
+
 ## 📋 Executive Summary
 
 Madar is a modern digital wallet application designed to provide secure, intuitive financial management for users. The system enables individuals to create and manage multiple wallets, perform peer-to-peer transfers, deposit and withdraw funds, and maintain a complete transaction history with real-time updates.
@@ -89,8 +93,28 @@ Madar addresses these challenges through:
 | **Total Balance Overview** | Aggregate view of all wallet balances              |
 | **Wallet Selector**        | Quick switching between multiple wallets           |
 | **Recent Transactions**    | Paginated transaction list with filtering          |
+| **Quick Actions**          | Fast access to deposit, withdraw, and transfer     |
 | **Responsive Design**      | Mobile-first approach with adaptive layouts        |
 | **RTL Support**            | Full right-to-left layout for Persian localization |
+
+### Business Features
+
+| Feature                 | Description                                          |
+| ----------------------- | ---------------------------------------------------- |
+| **Product Management**  | Display and manage business products/services        |
+| **Purchase Processing** | Handle customer purchases with transaction tracking  |
+| **Receipt Generation**  | Generate and display transaction receipts            |
+| **Refund Support**      | Handle transaction refunds for business transactions |
+
+### Transaction Management
+
+| Feature                      | Description                                                     |
+| ---------------------------- | --------------------------------------------------------------- |
+| **Advanced Filtering**       | Filter transactions by status, type, and date range             |
+| **Transaction Search**       | Search transactions by description or public ID                 |
+| **Pagination**               | Efficient pagination for large transaction histories            |
+| **Real-time Status Updates** | Live status updates (Pending → OTP Verified → Completed/Failed) |
+| **Transaction Receipts**     | Detailed receipt generation with full transaction metadata      |
 
 ### Developer Experience
 
@@ -246,25 +270,64 @@ madar-wallet/
 │   │   ├── _app.tsx             # App wrapper
 │   │   ├── index.tsx            # Dashboard page
 │   │   ├── login.tsx            # Login page
-│   │   └── signup.tsx           # Signup page
+│   │   ├── signup.tsx           # Signup page
+│   │   ├── wallets.tsx          # Wallets management page
+│   │   ├── transactions.tsx      # Transaction history page
+│   │   └── business.tsx         # Business products page
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── dashboard/       # Dashboard components
+│   │   │   │   ├── QuickActions.tsx
+│   │   │   │   ├── RecentTransactions.tsx
+│   │   │   │   ├── TotalBalanceCard.tsx
+│   │   │   │   ├── TransactionItem.tsx
+│   │   │   │   └── WalletSelector.tsx
 │   │   │   ├── login/           # Login components
+│   │   │   │   ├── LoginHeader.tsx
+│   │   │   │   ├── LoginFooterOTP.tsx
+│   │   │   │   ├── StagePhone.tsx
+│   │   │   │   └── StageOTP.tsx
+│   │   │   ├── transactions/    # Transaction components
+│   │   │   │   ├── TransactionFilters.tsx
+│   │   │   │   ├── TransactionSearch.tsx
+│   │   │   │   ├── TransactionTable.tsx
+│   │   │   │   ├── TransactionRow.tsx
+│   │   │   │   ├── TransactionPagination.tsx
+│   │   │   │   └── ActiveFilters.tsx
+│   │   │   ├── wallets/         # Wallet components
+│   │   │   │   ├── WalletCard.tsx
+│   │   │   │   ├── WalletGrid.tsx
+│   │   │   │   └── WalletEmpty.tsx
+│   │   │   ├── shared/          # Shared components
+│   │   │   │   ├── WalletSelector.tsx
+│   │   │   │   └── modals/
+│   │   │   │       ├── DepositModal.tsx
+│   │   │   │       ├── WithdrawModal.tsx
+│   │   │   │       ├── TransferModal.tsx
+│   │   │   │       ├── PurchaseModal.tsx
+│   │   │   │       └── ReceiptModal.tsx
+│   │   │   ├── business/        # Business components
+│   │   │   │   └── ProductCard.tsx
 │   │   │   └── ui/              # shadcn/ui components
 │   │   ├── config/              # App configuration
 │   │   ├── hooks/               # Custom React hooks
 │   │   ├── lib/
 │   │   │   ├── api/             # API client functions
 │   │   │   ├── auth/            # Auth utilities
+│   │   │   ├── date.ts          # Date utilities
 │   │   │   └── utils.ts         # General utilities
 │   │   ├── stores/              # Zustand stores
 │   │   └── types/               # TypeScript definitions
 │   ├── package.json
 │   └── tsconfig.json
 │
-├── plans/                         # Project documentation
-│   └── dashboard-plan.md        # Dashboard implementation plan
+├── docs/                          # Project documentation
+│   ├── back/
+│   │   └── backend-documentation-plan.md
+│   └── front/
+│       ├── authentication.md
+│       ├── dashboard.md
+│       └── frontend-documentation-plan.md
 │
 └── README.md                     # This file
 ```

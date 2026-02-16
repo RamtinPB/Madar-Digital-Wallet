@@ -165,11 +165,13 @@ export function TransferModal({
 					);
 
 					// Use the resolved wallet ID for the transfer
+					const description = `انتقال P2P به کیف پول ${recipientPublicId.trim()}`;
 					await transferFunds(
 						parseInt(fromWalletId),
 						recipientWallet.id,
 						amountNum,
 						"P2P",
+						description,
 					);
 				} catch (resolveErr) {
 					// If publicId resolution fails, show specific error
@@ -182,11 +184,14 @@ export function TransferModal({
 					return;
 				}
 			} else {
+				const toWallet = wallets.find((w) => w.id.toString() === toWalletId);
+				const description = `انتقال به کیف پول ${toWallet?.publicId || ""}`;
 				await transferFunds(
 					parseInt(fromWalletId),
 					parseInt(toWalletId),
 					amountNum,
 					"OWN_WALLET",
+					description,
 				);
 			}
 			onSuccess?.();

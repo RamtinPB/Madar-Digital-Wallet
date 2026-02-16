@@ -3,7 +3,7 @@ import * as transactionService from "./transaction.service";
 // Transfer funds between wallets
 export const transfer = async (ctx: any) => {
 	const body = await ctx.body;
-	const { fromWalletId, toWalletId, amount, transferType } = body;
+	const { fromWalletId, toWalletId, amount, transferType, description } = body;
 	const userId = ctx.user.id;
 
 	if (!fromWalletId || !toWalletId || !amount) {
@@ -18,6 +18,7 @@ export const transfer = async (ctx: any) => {
 			parseFloat(amount),
 			userId,
 			transferType || "P2P",
+			description,
 		);
 		return result;
 	} catch (err: any) {
@@ -30,7 +31,7 @@ export const transfer = async (ctx: any) => {
 export const withdraw = async (ctx: any) => {
 	const walletId = parseInt(ctx.params.id);
 	const body = await ctx.body;
-	const { amount } = body;
+	const { amount, description } = body;
 	const userId = ctx.user.id;
 
 	if (isNaN(walletId)) {
@@ -48,6 +49,7 @@ export const withdraw = async (ctx: any) => {
 			walletId,
 			parseFloat(amount),
 			userId,
+			description,
 		);
 		return result;
 	} catch (err: any) {
@@ -60,7 +62,7 @@ export const withdraw = async (ctx: any) => {
 export const deposit = async (ctx: any) => {
 	const walletId = parseInt(ctx.params.id);
 	const body = await ctx.body;
-	const { amount } = body;
+	const { amount, description } = body;
 	const userId = ctx.user.id;
 
 	if (isNaN(walletId)) {
@@ -78,6 +80,7 @@ export const deposit = async (ctx: any) => {
 			walletId,
 			parseFloat(amount),
 			userId,
+			description,
 		);
 		return result;
 	} catch (err: any) {

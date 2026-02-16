@@ -35,6 +35,7 @@ export interface TransactionWithDetails {
 	publicId: string;
 	transactionType: TransactionType;
 	status: TransactionStatus;
+	transferType?: "OWN_WALLET" | "P2P";
 	amount: string;
 	description?: string;
 	createdAt: string;
@@ -85,9 +86,9 @@ export const transactionStatusLabels: Record<TransactionStatus, string> = {
 
 // Helper to get status icon
 export const transactionStatusIcons: Record<TransactionStatus, string> = {
-	COMPLETED: "✅",
+	COMPLETED: "✓",
 	PENDING: "⏳",
-	FAILED: "❌",
+	FAILED: "✗",
 };
 
 // Type options for filters

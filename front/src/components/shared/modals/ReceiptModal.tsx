@@ -113,7 +113,7 @@ export function ReceiptModal({
 						<span className="text-2xl">🧾</span>
 						{getReceiptTitle(transaction.transactionType)}
 					</DialogTitle>
-					<DialogDescription>
+					<DialogDescription className="text-right" dir="rtl">
 						شماره فاکتور: {transaction.publicId}
 					</DialogDescription>
 				</DialogHeader>

@@ -84,7 +84,9 @@ export function DepositModal({
 		try {
 			setIsLoading(true);
 			setError(null);
-			await depositToWallet(parseInt(selectedWalletId), amountNum);
+			const wallet = wallets.find((w) => w.id.toString() === selectedWalletId);
+			const description = `واریز وجه به کیف پول ${wallet?.publicId || ""}`;
+			await depositToWallet(parseInt(selectedWalletId), amountNum, description);
 			onSuccess?.();
 			onClose();
 		} catch (err) {

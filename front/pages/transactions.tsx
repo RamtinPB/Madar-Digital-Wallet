@@ -107,13 +107,6 @@ export default function TransactionsPage() {
 					{/* Page Header */}
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 						<div>
-							<Link
-								href="/"
-								className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-2"
-							>
-								<ArrowRight className="ml-1 h-4 w-4" />
-								بازگشت به داشبورد
-							</Link>
 							<h1 className="text-2xl font-bold">تاریخچه تراکنش‌ها</h1>
 							<p className="text-muted-foreground text-sm mt-1">
 								Transaction History
