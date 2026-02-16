@@ -4,4 +4,4 @@ export { ActiveFilters } from "./ActiveFilters";
 export { TransactionTable } from "./TransactionTable";
 export { TransactionRow } from "./TransactionRow";
 export { TransactionPagination } from "./TransactionPagination";
-export { ReceiptModal } from "./ReceiptModal";
+export { ReceiptModal } from "../shared/ReceiptModal";

@@ -38,7 +38,11 @@ import {
 import { formatCurrency, formatNumber } from "@/lib/format";
 
 // Import modals
-import { DepositModal, WithdrawModal, TransferModal } from "@/modals";
+import {
+	DepositModal,
+	WithdrawModal,
+	TransferModal,
+} from "@/components/shared/transactions.index";
 
 export default function WalletsPage() {
 	const router = useRouter();

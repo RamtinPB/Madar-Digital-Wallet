@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/MainLayout";
 import { ProductCard, type Product } from "@/components/business";
-import { PurchaseModal } from "@/modals/PurchaseModal";
+import { PurchaseModal } from "@/components/shared/PurchaseModal";
 import { getUserWallets } from "@/lib/api/wallet";
 import type { Wallet } from "@/types/wallet";
 import { toast } from "sonner";

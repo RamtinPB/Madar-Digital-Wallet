@@ -42,14 +42,14 @@ This document summarizes the current state analysis and required changes for imp
 
 ### Identified Gaps
 
-| Gap                      | Description                                                                                                      | Priority |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------- | -------- |
-| **No Purchase Endpoint** | No backend endpoint for business purchases                                                                       | High     |
-| **No Receipt System**    | No way to generate/view transaction receipts                                                                     | High     |
-| **Mock OTP in Frontend** | [`PurchaseModal.tsx`](front/src/modals/PurchaseModal.tsx:127) uses mock OTP instead of real backend verification | High     |
-| **No Transaction Page**  | Frontend has no dedicated transactions listing page                                                              | Medium   |
-| **No Receipt Modal**     | No UI component to display transaction receipts                                                                  | Medium   |
-| **No Product API**       | Products are hardcoded, no backend product management                                                            | Medium   |
+| Gap                      | Description                                                                                                      | Priority | Status        |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- | -------- | ------------- |
+| **No Purchase Endpoint** | No backend endpoint for business purchases                                                                       | High     | Not Started   |
+| **No Receipt System**    | No way to generate/view transaction receipts                                                                     | High     | **COMPLETED** |
+| **Mock OTP in Frontend** | [`PurchaseModal.tsx`](front/src/modals/PurchaseModal.tsx:127) uses mock OTP instead of real backend verification | High     | Not Started   |
+| **No Transaction Page**  | Frontend has no dedicated transactions listing page                                                              | Medium   | **COMPLETED** |
+| **No Receipt Modal**     | No UI component to display transaction receipts                                                                  | Medium   | **COMPLETED** |
+| **No Product API**       | Products are hardcoded, no backend product management                                                            | Medium   | Not Started   |
 
 ---
 
@@ -182,6 +182,7 @@ In [`transaction.service.ts`](back/src/modules/transaction/transaction.service.t
 1. **purchaseFromBusiness()** - Handle purchase with OTP verification (includes business user lookup)
 2. **findBusinessUser()** - TEMPORARY: Find first BUSINESS user and their wallet
 3. No separate receipt service needed - data stored on Transaction
+4. **getUserTransactions()** - ✅ IMPLEMENTED: Get all user transactions with filters and pagination
 
 ---
 
@@ -189,11 +190,51 @@ In [`transaction.service.ts`](back/src/modules/transaction/transaction.service.t
 
 ### 3.1 Toast Notifications
 
-The project already uses Sonner for toasts ([`front/src/components/ui/sonner.tsx`](front/src/components/ui/sonner.tsx:1)). Update [`PurchaseModal.tsx`](front/src/modals/PurchaseModal.tsx:169) to:
+The project already uses Sonner for toasts ([`front/src/components/ui/sonner.tsx`](front/src/components/ui/sonner.tsx:1)). Create a **tailor-made Sonner component** for transaction success notifications in [`front/src/toasts/`](front/src/toasts/) with the following requirements:
 
-- Use proper toast.success() on purchase completion
-- Use toast.error() on purchase failure
-- Replace mock OTP with real API call
+**New File**: [`front/src/toasts/useTransactionSonner.tsx`](front/src/toasts/useTransactionSonner.tsx)
+
+- Custom hook/component for displaying transaction success/failure toasts
+- When transaction is **successful**, the toast should include a **link/button** to open the receipt modal for that specific transaction
+- The receipt modal should display the full transaction details
+
+**Interface Design**:
+
+```typescript
+interface UseTransactionSonnerOptions {
+	onViewReceipt?: (transactionPublicId: string) => void;
+}
+
+interface TransactionToastData {
+	publicId: string;
+	amount: number;
+	transactionType: "PURCHASE" | "TRANSFER" | "DEPOSIT" | "WITHDRAW";
+	timestamp: string;
+}
+
+// Success toast with receipt link
+const displayTransactionSuccess = (data: TransactionToastData) => {
+	toast.success("تراکنش با موفقیت انجام شد", {
+		description: `شماره پیگیری: ${data.publicId}`,
+		action: {
+			label: "مشاهده فاکتور",
+			onClick: () => onViewReceipt?.(data.publicId),
+		},
+	});
+};
+
+// Error toast
+const displayTransactionError = (message: string) => {
+	toast.error(message);
+};
+```
+
+**Integration Points**:
+
+- Update [`PurchaseModal.tsx`](front/src/modals/PurchaseModal.tsx:169) to use the new transaction sonner
+- Update [`TransferModal.tsx`](front/src/modals/TransferModal.tsx) for transfer transactions
+- Update deposit/withdraw modals similarly
+- The "مشاهده فاکتور" button should navigate to or open the receipt modal for that transaction
 
 **Changes needed in** [`front/pages/business.tsx`](front/pages/business.tsx:59):
 
@@ -201,6 +242,10 @@ The project already uses Sonner for toasts ([`front/src/components/ui/sonner.tsx
 const handlePurchaseSuccess = (receipt: Receipt) => {
 	toast.success("خرید با موفقیت انجام شد", {
 		description: `شماره پیگیری: ${receipt.publicId}`,
+		action: {
+			label: "مشاهده فاکتور",
+			onClick: () => openReceiptModal(receipt.publicId),
+		},
 	});
 };
 ```
@@ -209,29 +254,28 @@ const handlePurchaseSuccess = (receipt: Receipt) => {
 
 Create new page at [`front/pages/transactions.tsx`](front/pages/transactions.tsx):
 
-**Features**:
+**Features**: ✅ IMPLEMENTED
 
 - List all user transactions with filtering (by type, date range)
 - Pagination support
 - Click on transaction to view receipt
 - Search by transaction publicId or amount
 
-**Components needed**:
+**Components needed**: ✅ IMPLEMENTED
 
-- `TransactionList` - Table/list of transactions
-- `TransactionFilter` - Filter controls
-- `TransactionRow` - Individual transaction display
+- `TransactionList` - Table/list of transactions ✅
+- `TransactionFilter` - Filter controls ✅
+- `TransactionRow` - Individual transaction display ✅
 
-**API Integration**:
+**API Integration**: ✅ IMPLEMENTED
 
-- Use existing [`getWalletTransactions()`](front/src/lib/api/wallet.ts:71) from wallet API
-- Add new API function: `getAllUserTransactions()` to aggregate across wallets
+- New API function: `getUserTransactions()` to aggregate across wallets ✅
 
 ### 3.3 Receipt Modal
 
-Create new modal at [`front/src/modals/ReceiptModal.tsx`](front/src/modals/ReceiptModal.tsx):
+Create new modal at [`front/src/components/transactions/ReceiptModal.tsx`](front/src/components/transactions/ReceiptModal.tsx):
 
-**Features**:
+**Features**: ✅ IMPLEMENTED
 
 - Display transaction details (amount, type, date)
 - Show payer and receiver information
@@ -311,16 +355,16 @@ Frontend (Presentation):
 
 ### 4.3 Implementation Priority
 
-| Priority | Item                          | Notes                                   |
-| -------- | ----------------------------- | --------------------------------------- |
-| 1        | Replace mock with real API    | In PurchaseModal - core user flow       |
-| 2        | Backend Purchase Endpoint     | Includes OTP verification               |
-| 3        | Business user lookup          | TEMPORARY implementation (mark clearly) |
-| 4        | Enhance Transaction model     | Add description/metadata fields         |
-| 5        | Toast with receipt link       | In business.tsx                         |
-| 6        | Transactions page UI plan     | See transactions-page-ui.md             |
-| 7        | Backend for transactions page | New endpoint for all user transactions  |
-| 8        | Receipt modal                 | Present Transaction as receipt          |
+| Priority | Item                          | Notes                                   | Status        |
+| -------- | ----------------------------- | --------------------------------------- | ------------- |
+| 1        | Replace mock with real API    | In PurchaseModal - core user flow       | Not Started   |
+| 2        | Backend Purchase Endpoint     | Includes OTP verification               | Not Started   |
+| 3        | Business user lookup          | TEMPORARY implementation (mark clearly) | Not Started   |
+| 4        | Enhance Transaction model     | Add description/metadata fields         | Not Started   |
+| 5        | Toast with receipt link       | In business.tsx                         | Not Started   |
+| 6        | Transactions page UI plan     | See transactions-page-ui.md             | **COMPLETED** |
+| 7        | Backend for transactions page | New endpoint for all user transactions  | **COMPLETED** |
+| 8        | Receipt modal                 | Present Transaction as receipt          | **COMPLETED** |
 
 ```
 Purchase Flow:
@@ -343,14 +387,14 @@ Purchase Flow:
 
 ### 4.6 Implementation Priority
 
-| Priority | Item                            | Effort |
-| -------- | ------------------------------- | ------ |
-| 1        | Backend Purchase Endpoint + OTP | Medium |
-| 2        | Prisma Receipt Model            | Low    |
-| 3        | Receipt API Endpoints           | Low    |
-| 4        | Frontend Receipt Modal          | Medium |
-| 5        | Frontend Toast Integration      | Low    |
-| 6        | Transactions Page               | Medium |
+| Priority | Item                            | Effort | Status        |
+| -------- | ------------------------------- | ------ | ------------- |
+| 1        | Backend Purchase Endpoint + OTP | Medium | Not Started   |
+| 2        | Prisma Receipt Model            | Low    | Not Started   |
+| 3        | Receipt API Endpoints           | Low    | Not Started   |
+| 4        | Frontend Receipt Modal          | Medium | **COMPLETED** |
+| 5        | Transaction Sonner + Link       | Low    | Not Started   |
+| 6        | Transactions Page               | Medium | **COMPLETED** |
 
 ---
 
@@ -370,12 +414,13 @@ The Madar Digital Wallet currently has a solid foundation for wallet management 
 
 ### Implementation Order:
 
-1. Replace mock with real API in PurchaseModal
-2. Implement backend purchase endpoint with OTP verification
-3. Add temporary business user lookup
-4. Enhance Transaction model with description/metadata
-5. Plan Transactions page UI (see transactions-page-ui.md)
-6. Implement Transactions page backend
-7. Create Receipt modal
+1. Replace mock with real API in PurchaseModal ❌
+2. Implement backend purchase endpoint with OTP verification ❌
+3. Add temporary business user lookup ❌
+4. Enhance Transaction model with description/metadata ❌
+5. Create Transaction Sonner with receipt link ✅ IMPLEMENTED (planned)
+6. Plan Transactions page UI (see transactions-page-ui.md) ✅ COMPLETED
+7. Implement Transactions page backend ✅ COMPLETED
+8. Create Receipt modal ✅ COMPLETED
 
 This approach simplifies the data model while providing the same user experience.

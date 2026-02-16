@@ -13,7 +13,11 @@ import {
 } from "@/lib/api/wallet";
 import type { Wallet, Transaction } from "@/lib/api/wallet";
 import { useAuthStore } from "@/stores/auth.store";
-import { DepositModal, WithdrawModal, TransferModal } from "@/modals";
+import {
+	DepositModal,
+	WithdrawModal,
+	TransferModal,
+} from "@/components/shared/transactions.index";
 
 export default function Dashboard() {
 	const [wallets, setWallets] = useState<Wallet[]>([]);

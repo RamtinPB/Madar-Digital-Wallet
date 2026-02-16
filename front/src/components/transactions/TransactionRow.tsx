@@ -99,30 +99,32 @@ export function TransactionRow({
 			className="cursor-pointer hover:bg-muted/50"
 			onClick={() => onViewReceipt(transaction)}
 		>
-			<TableCell className="font-medium">{index + 1}</TableCell>
-			<TableCell dir="rtl">{formattedDate}</TableCell>
-			<TableCell>
-				<div className="flex items-center gap-2">
+			<TableCell className="font-medium text-center">{index + 1}</TableCell>
+			<TableCell dir="rtl" className=" text-center">
+				{formattedDate}
+			</TableCell>
+			<TableCell className="">
+				<div className="flex items-center justify-center gap-1">
 					{getTransactionIcon(transaction.transactionType)}
 					<span>{transactionTypeLabels[transaction.transactionType]}</span>
 				</div>
 			</TableCell>
-			<TableCell>
+			<TableCell className=" text-center">
 				<span className={isIncomingTx ? "text-green-600" : "text-red-600"}>
 					{isIncomingTx ? "+" : "-"}
 					{formatCurrency(Math.abs(amount))}
 				</span>
 			</TableCell>
-			<TableCell>
+			<TableCell className="">
 				<Badge variant="outline" className="gap-1">
 					<span>{transactionStatusIcons[transaction.status]}</span>
 					<span>{transactionStatusLabels[transaction.status]}</span>
 				</Badge>
 			</TableCell>
-			<TableCell className="text-muted-foreground">
+			<TableCell className="text-muted-foreground text-center">
 				{description || "-"}
 			</TableCell>
-			<TableCell>
+			<TableCell className=" ">
 				<Button
 					variant="ghost"
 					size="sm"

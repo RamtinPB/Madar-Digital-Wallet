@@ -85,7 +85,7 @@ export function TransactionPagination({
 						value={limit.toString()}
 						onValueChange={(value) => onLimitChange(parseInt(value))}
 					>
-						<SelectTrigger className="w-[80px]">
+						<SelectTrigger className="w-20">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>

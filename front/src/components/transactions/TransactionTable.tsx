@@ -89,13 +89,13 @@ export function TransactionTable({
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<TableHead className="w-[50px]">#</TableHead>
-						<TableHead className="w-[120px]">تاریخ</TableHead>
-						<TableHead className="w-[100px]">نوع</TableHead>
-						<TableHead className="w-[120px]">مبلغ</TableHead>
-						<TableHead className="w-[100px]">وضعیت</TableHead>
-						<TableHead>توضیحات</TableHead>
-						<TableHead className="w-[120px]">عملیات</TableHead>
+						<TableHead className="w-[50px] text-center">#</TableHead>
+						<TableHead className="w-[120px] text-center">تاریخ</TableHead>
+						<TableHead className="w-[100px] text-center">نوع</TableHead>
+						<TableHead className="w-[120px] text-center">مبلغ</TableHead>
+						<TableHead className="w-[100px] text-center">وضعیت</TableHead>
+						<TableHead className=" text-center">توضیحات</TableHead>
+						<TableHead className="w-[120px] text-center">عملیات</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
