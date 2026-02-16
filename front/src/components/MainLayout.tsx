@@ -161,7 +161,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 										{user?.phoneNumber || "کاربر"}
 									</span>
 									<span className="text-xs text-muted-foreground">
-										{user?.role === "BUSINESS" ? "کسب و کار" : "شخصی"}
+										{user?.userType === "BUSINESS" ? "کسب و کار" : "شخصی"}
 									</span>
 								</div>
 								<ChevronsUpDown className="mr-auto h-4 w-4 text-muted-foreground" />

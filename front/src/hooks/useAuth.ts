@@ -18,8 +18,8 @@ export function useAuthLoading() {
 	return useAuthStore((state) => state.loading);
 }
 
-export function useUserRole() {
-	return useAuthStore((state) => state.user?.role ?? null);
+export function useUserType() {
+	return useAuthStore((state) => state.user?.userType ?? null);
 }
 
 // ─────────────────────────────────────────────────────────────────

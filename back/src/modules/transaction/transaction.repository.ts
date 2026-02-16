@@ -140,3 +140,117 @@ export const findLedgerEntriesByWalletId = async (walletId: number) => {
 		orderBy: { createdAt: "desc" },
 	});
 };
+
+// Get all user transactions across all wallets with filters and pagination
+export const findUserTransactions = async (
+	userId: number,
+	filters: {
+		type?: string;
+		status?: string;
+		walletId?: number;
+		fromDate?: string;
+		toDate?: string;
+		search?: string;
+		page?: number;
+		limit?: number;
+	} = {},
+) => {
+	const {
+		type,
+		status,
+		walletId,
+		fromDate,
+		toDate,
+		search,
+		page = 1,
+		limit = 20,
+	} = filters;
+
+	// Get user's wallet IDs
+	const userWallets = await prisma.wallet.findMany({
+		where: { userId },
+		select: { id: true },
+	});
+	const walletIds = userWallets.map((w) => w.id);
+
+	if (walletIds.length === 0) {
+		return { transactions: [], total: 0 };
+	}
+
+	// Build where clause
+	const where: any = {
+		OR: [
+			{ payerWalletId: { in: walletIds } },
+			{ receiverWalletId: { in: walletIds } },
+		],
+	};
+
+	if (type) {
+		where.transactionType = type;
+	}
+
+	if (status) {
+		where.status = status;
+	}
+
+	if (walletId) {
+		where.OR = [{ payerWalletId: walletId }, { receiverWalletId: walletId }];
+	}
+
+	if (fromDate) {
+		where.createdAt = {
+			...where.createdAt,
+			gte: new Date(fromDate),
+		};
+	}
+
+	if (toDate) {
+		where.createdAt = {
+			...where.createdAt,
+			lte: new Date(toDate),
+		};
+	}
+
+	if (search) {
+		where.OR = [
+			...(where.OR || []),
+			{ publicId: { contains: search } },
+			{ description: { contains: search } },
+		];
+	}
+
+	// Get total count
+	const total = await prisma.transaction.count({ where });
+
+	// Get transactions with pagination
+	const transactions = await prisma.transaction.findMany({
+		where,
+		include: {
+			payerWallet: {
+				include: {
+					user: {
+						select: {
+							id: true,
+							phoneNumber: true,
+						},
+					},
+				},
+			},
+			receiverWallet: {
+				include: {
+					user: {
+						select: {
+							id: true,
+							phoneNumber: true,
+						},
+					},
+				},
+			},
+		},
+		orderBy: { createdAt: "desc" },
+		skip: (page - 1) * limit,
+		take: limit,
+	});
+
+	return { transactions, total };
+};

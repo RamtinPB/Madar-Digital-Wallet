@@ -5,6 +5,7 @@ import {
 	Wallet,
 	PlusCircle,
 	ShoppingCart,
+	History,
 } from "lucide-react";
 
 interface NavItem {
@@ -50,6 +51,12 @@ export const navItems: NavItem[] = [
 				name: "مدیریت کیف پول‌ها",
 				icon: Wallet,
 				href: "/wallets",
+			},
+			{
+				key: "transactions",
+				name: "تاریخچه تراکنش‌ها",
+				icon: History,
+				href: "/transactions",
 			},
 		],
 		href: "",

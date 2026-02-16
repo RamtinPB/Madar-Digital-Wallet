@@ -165,6 +165,9 @@ export function SharedWalletSelector({
 							<div className="flex items-center justify-between w-full gap-4">
 								<div className="flex items-center gap-2">
 									<span>{getWalletDisplayName(wallet)}</span>
+									<span className="text-muted-foreground text-sm">
+										{formatCurrency(wallet.balance)}
+									</span>
 									{wallet.primary && (
 										<Badge
 											variant="secondary"
@@ -175,9 +178,6 @@ export function SharedWalletSelector({
 										</Badge>
 									)}
 								</div>
-								<span className="text-muted-foreground text-sm">
-									{formatCurrency(wallet.balance)}
-								</span>
 							</div>
 						</SelectItem>
 					))}

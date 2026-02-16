@@ -279,3 +279,33 @@ export const getWalletLedger = async (walletId: number, userId: number) => {
 
 	return transactionRepository.findLedgerEntriesByWalletId(walletId);
 };
+
+// Get all user transactions with filters and pagination
+export const getUserTransactions = async (
+	userId: number,
+	filters: {
+		type?: string;
+		status?: string;
+		walletId?: number;
+		fromDate?: string;
+		toDate?: string;
+		search?: string;
+		page?: number;
+		limit?: number;
+	} = {},
+) => {
+	const { page = 1, limit = 20 } = filters;
+
+	const { transactions, total } =
+		await transactionRepository.findUserTransactions(userId, filters);
+
+	return {
+		transactions,
+		pagination: {
+			page,
+			limit,
+			total,
+			totalPages: Math.ceil(total / limit),
+		},
+	};
+};

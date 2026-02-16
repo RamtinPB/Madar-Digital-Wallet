@@ -57,4 +57,9 @@ export function registerTransactionRoutes(appInstance: typeof app) {
 	appInstance.get("/ledger/wallet/:id", transactionController.getWalletLedger, {
 		beforeHandle: requireAuth,
 	});
+
+	// Get all user transactions (across all wallets)
+	appInstance.get("/transactions", transactionController.getUserTransactions, {
+		beforeHandle: requireAuth,
+	});
 }

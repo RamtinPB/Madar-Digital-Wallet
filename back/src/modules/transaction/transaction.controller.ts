@@ -158,3 +158,31 @@ export const getWalletLedger = async (ctx: any) => {
 		return { error: err.message || "Failed to get ledger" };
 	}
 };
+
+// Get all user transactions
+export const getUserTransactions = async (ctx: any) => {
+	const userId = ctx.user.id;
+	const query = ctx.query;
+
+	const filters = {
+		type: query.type as string | undefined,
+		status: query.status as string | undefined,
+		walletId: query.walletId ? parseInt(query.walletId) : undefined,
+		fromDate: query.fromDate as string | undefined,
+		toDate: query.toDate as string | undefined,
+		search: query.search as string | undefined,
+		page: query.page ? parseInt(query.page) : 1,
+		limit: query.limit ? parseInt(query.limit) : 20,
+	};
+
+	try {
+		const result = await transactionService.getUserTransactions(
+			userId,
+			filters,
+		);
+		return result;
+	} catch (err: any) {
+		ctx.set.status = 400;
+		return { error: err.message || "Failed to get transactions" };
+	}
+};

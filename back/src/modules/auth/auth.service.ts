@@ -92,8 +92,8 @@ export const signupWithPasswordOtp = async (
 		userType,
 	);
 
-	// Create a wallet for the new user (default balance: 0)
-	const wallet = await walletRepository.createWallet(newUser.id, 0);
+	// Create a wallet for the new user (default balance: 0, set as primary)
+	const wallet = await walletRepository.createWallet(newUser.id, 0, true);
 
 	// Generate tokens
 	const accessToken = signAccessToken({
