@@ -16,12 +16,14 @@ interface TransactionTableProps {
 	transactions: TransactionWithDetails[];
 	isLoading: boolean;
 	onViewReceipt: (transaction: TransactionWithDetails) => void;
+	currentWalletId?: number;
 }
 
 export function TransactionTable({
 	transactions,
 	isLoading,
 	onViewReceipt,
+	currentWalletId,
 }: TransactionTableProps) {
 	if (isLoading) {
 		return (
@@ -105,6 +107,7 @@ export function TransactionTable({
 							transaction={transaction}
 							index={index}
 							onViewReceipt={onViewReceipt}
+							currentWalletId={currentWalletId}
 						/>
 					))}
 				</TableBody>

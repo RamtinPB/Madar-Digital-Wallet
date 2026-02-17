@@ -22,6 +22,7 @@ interface ReceiptModalProps {
 	transaction: TransactionWithDetails | null;
 	isOpen: boolean;
 	onClose: () => void;
+	currentWalletId?: number;
 }
 
 // Get Persian label for transaction type
@@ -44,8 +45,31 @@ function getReceiptTitle(type: TransactionType): string {
 	}
 }
 
-// Check if transaction is incoming
-function isIncoming(transaction: TransactionWithDetails): boolean {
+// Check if transaction is incoming based on wallet role
+function isIncoming(
+	transaction: TransactionWithDetails,
+	currentWalletId?: number,
+): boolean {
+	// If no wallet specified, use transaction type logic
+	if (!currentWalletId) {
+		return (
+			transaction.transactionType === "DEPOSIT" ||
+			transaction.transactionType === "REFUND"
+		);
+	}
+
+	// Compare current wallet with payer/receiver
+	const isPayer = transaction.payerWallet?.id === currentWalletId;
+	const isReceiver = transaction.receiverWallet?.id === currentWalletId;
+
+	if (isReceiver) {
+		return true;
+	}
+	if (isPayer) {
+		return false;
+	}
+
+	// Fallback to transaction type logic
 	return (
 		transaction.transactionType === "DEPOSIT" ||
 		transaction.transactionType === "REFUND"
@@ -56,11 +80,12 @@ export function ReceiptModal({
 	transaction,
 	isOpen,
 	onClose,
+	currentWalletId,
 }: ReceiptModalProps) {
 	if (!transaction) return null;
 
 	const amount = parseFloat(transaction.amount);
-	const isIncomingTx = isIncoming(transaction);
+	const isIncomingTx = isIncoming(transaction, currentWalletId);
 	const fee = transaction.metadata?.fee
 		? parseFloat(String(transaction.metadata.fee))
 		: 0;

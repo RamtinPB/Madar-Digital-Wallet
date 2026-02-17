@@ -51,6 +51,8 @@ export function TransferModal({
 	const [recipientPublicId, setRecipientPublicId] = useState("");
 
 	// Sync wallet IDs when modal opens - initialize both source and destination
+	// Only trigger on isOpen, wallet, or wallets changes to avoid race conditions
+	// where effect runs with stale state before handleOpenChange updates it
 	useEffect(() => {
 		if (isOpen && wallets.length > 0) {
 			// Determine the source wallet
@@ -62,28 +64,24 @@ export function TransferModal({
 				sourceWallet = wallets.find((w) => w.primary) || wallets[0];
 			}
 
-			// Set source wallet ID if not already set
+			// Always set source wallet ID when modal opens (reset for new wallet)
 			if (sourceWallet) {
 				const sourceId = sourceWallet.id.toString();
-				if (!fromWalletId || fromWalletId === sourceId) {
-					setFromWalletId(sourceId);
-				}
+				setFromWalletId(sourceId);
 
-				// Set destination wallet ID to a different wallet
-				if (!toWalletId) {
-					const otherWallets = wallets.filter(
-						(w) => w.id.toString() !== sourceId,
-					);
-					if (otherWallets.length > 0) {
-						// Prefer primary if it's not the source, otherwise first available
-						const destWallet =
-							otherWallets.find((w) => w.primary) || otherWallets[0];
-						setToWalletId(destWallet.id.toString());
-					}
+				// Always reset destination wallet ID to a different wallet when modal opens
+				const otherWallets = wallets.filter(
+					(w) => w.id.toString() !== sourceId,
+				);
+				if (otherWallets.length > 0) {
+					// Prefer primary if it's not the source, otherwise first available
+					const destWallet =
+						otherWallets.find((w) => w.primary) || otherWallets[0];
+					setToWalletId(destWallet.id.toString());
 				}
 			}
 		}
-	}, [isOpen, wallet, wallets, fromWalletId, toWalletId]);
+	}, [isOpen, wallet, wallets]); // Removed fromWalletId, toWalletId from deps
 
 	// Get selected wallet
 	const fromWallet = wallets.find((w) => w.id.toString() === fromWalletId);

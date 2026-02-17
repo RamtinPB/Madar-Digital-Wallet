@@ -13,12 +13,12 @@ import type {
 } from "@/types/transaction";
 import {
 	TransactionSearch,
-	TransactionFilters,
 	ActiveFilters,
 	TransactionTable,
 	TransactionPagination,
 	ReceiptModal,
 } from "@/components/transactions";
+import { TransactionFiltersModal } from "@/components/shared/modals/TransactionFiltersModal";
 
 export default function TransactionsPage() {
 	const [showFilters, setShowFilters] = useState(false);
@@ -38,18 +38,25 @@ export default function TransactionsPage() {
 		setLimit,
 	} = useTransactions({ initialPage: 1, initialLimit: 20 });
 
-	// Load wallets on mount
+	// Load wallets on mount and set primary wallet as default filter
 	useEffect(() => {
 		const loadWallets = async () => {
 			try {
 				const response = await getUserWallets();
-				setWallets(response.wallets || []);
+				const userWallets = response.wallets || [];
+				setWallets(userWallets);
+
+				// Auto-select primary wallet for initial filter
+				const primaryWallet = userWallets.find((w: Wallet) => w.primary);
+				if (primaryWallet) {
+					setFilters({ walletId: primaryWallet.id });
+				}
 			} catch (err) {
 				console.error("Failed to load wallets:", err);
 			}
 		};
 		loadWallets();
-	}, []);
+	}, [setFilters]);
 
 	// Handle search
 	const handleSearch = (search: string) => {
@@ -64,7 +71,13 @@ export default function TransactionsPage() {
 
 	// Handle clear filters
 	const handleClearFilters = () => {
-		setFilters({});
+		// When clearing, set to primary wallet
+		const primaryWallet = wallets.find((w) => w.primary);
+		if (primaryWallet) {
+			setFilters({ walletId: primaryWallet.id });
+		} else {
+			setFilters({});
+		}
 	};
 
 	// Handle remove single filter
@@ -86,15 +99,28 @@ export default function TransactionsPage() {
 		setSelectedTransaction(null);
 	};
 
-	// Check if any filters are active
+	// Check if any filters are active (excluding search and walletId which has special handling)
 	const hasActiveFilters = !!(
 		filters.type ||
 		filters.status ||
-		filters.walletId ||
 		filters.fromDate ||
-		filters.toDate ||
-		filters.search
+		filters.toDate
 	);
+
+	// Get the current wallet being displayed
+	const getCurrentWallet = () => {
+		if (filters.walletId) {
+			return wallets.find((w) => w.id === filters.walletId);
+		}
+		return null;
+	};
+
+	const currentWallet = getCurrentWallet();
+
+	// Current wallet ID for passing to components
+	const currentWalletId = filters.walletId
+		? Number(filters.walletId)
+		: undefined;
 
 	return (
 		<>
@@ -124,7 +150,7 @@ export default function TransactionsPage() {
 						</div>
 						<Button
 							variant="outline"
-							onClick={() => setShowFilters(!showFilters)}
+							onClick={() => setShowFilters(true)}
 							className="gap-2"
 						>
 							<SlidersHorizontal className="h-4 w-4" />
@@ -137,23 +163,27 @@ export default function TransactionsPage() {
 						</Button>
 					</div>
 
-					{/* Filters Panel */}
-					{showFilters && (
-						<TransactionFilters
-							filters={filters}
-							onApply={handleApplyFilters}
-							onClear={handleClearFilters}
-						/>
-					)}
-
-					{/* Active Filters Tags */}
-					{hasActiveFilters && !showFilters && (
+					{/* Active Filters Tags - Always show when filters are active */}
+					{hasActiveFilters && (
 						<ActiveFilters
 							filters={filters}
 							wallets={wallets}
 							onRemove={handleRemoveFilter}
 							onClearAll={handleClearFilters}
 						/>
+					)}
+
+					{/* Wallet Badge - Shows which wallet's transactions are being displayed */}
+					{!hasActiveFilters && currentWallet && (
+						<div className="flex flex-wrap items-center gap-2">
+							<div className="flex items-center gap-1 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-full text-sm">
+								<span>
+									کیف پول:{" "}
+									{currentWallet.name ||
+										`**** ${currentWallet.publicId.slice(-4)}`}
+								</span>
+							</div>
+						</div>
 					)}
 
 					{/* Error Message */}
@@ -168,6 +198,7 @@ export default function TransactionsPage() {
 						transactions={transactions}
 						isLoading={isLoading}
 						onViewReceipt={handleViewReceipt}
+						currentWalletId={currentWalletId}
 					/>
 
 					{/* Pagination */}
@@ -182,11 +213,22 @@ export default function TransactionsPage() {
 						/>
 					)}
 
+					{/* Filters Modal */}
+					<TransactionFiltersModal
+						isOpen={showFilters}
+						onClose={() => setShowFilters(false)}
+						filters={filters}
+						wallets={wallets}
+						onApply={handleApplyFilters}
+						onClear={handleClearFilters}
+					/>
+
 					{/* Receipt Modal */}
 					<ReceiptModal
 						transaction={selectedTransaction}
 						isOpen={showReceiptModal}
 						onClose={handleCloseReceipt}
+						currentWalletId={currentWalletId}
 					/>
 				</div>
 			</MainLayout>

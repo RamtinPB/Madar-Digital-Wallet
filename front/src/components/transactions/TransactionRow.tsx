@@ -35,6 +35,7 @@ interface TransactionRowProps {
 	transaction: TransactionWithDetails;
 	index: number;
 	onViewReceipt: (transaction: TransactionWithDetails) => void;
+	currentWalletId?: number;
 }
 
 // Get icon for transaction type
@@ -58,7 +59,33 @@ function getTransactionIcon(type: TransactionType) {
 }
 
 // Check if transaction is incoming (positive amount for user)
-function isIncoming(transaction: TransactionWithDetails): boolean {
+function isIncoming(
+	transaction: TransactionWithDetails,
+	currentWalletId?: number,
+): boolean {
+	// If viewing all wallets (no filter), show deposits as positive, others as negative
+	if (!currentWalletId) {
+		return (
+			transaction.transactionType === "DEPOSIT" ||
+			transaction.transactionType === "REFUND"
+		);
+	}
+
+	// Compare current wallet with payer/receiver to determine if money came in or went out
+	const isPayer = transaction.payerWallet?.id === currentWalletId;
+	const isReceiver = transaction.receiverWallet?.id === currentWalletId;
+
+	// If this wallet is the receiver, it's incoming (positive)
+	if (isReceiver) {
+		return true;
+	}
+
+	// If this wallet is the payer, it's outgoing (negative)
+	if (isPayer) {
+		return false;
+	}
+
+	// Fallback: use transaction type logic
 	return (
 		transaction.transactionType === "DEPOSIT" ||
 		transaction.transactionType === "REFUND"
@@ -89,9 +116,10 @@ export function TransactionRow({
 	transaction,
 	index,
 	onViewReceipt,
+	currentWalletId,
 }: TransactionRowProps) {
 	const amount = parseFloat(transaction.amount);
-	const isIncomingTx = isIncoming(transaction);
+	const isIncomingTx = isIncoming(transaction, currentWalletId);
 
 	// Format date to Persian
 	const formattedDate = new Date(transaction.createdAt).toLocaleDateString(
