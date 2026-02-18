@@ -13,11 +13,39 @@ datasource db {
   provider = "postgresql"
 }
 
+// =============================================================================
+// USER ENUMS
+// =============================================================================
+
 enum UserType {
   CUSTOMER
   BUSINESS
-  ADMIN
+  // ADMIN // Deprecated - use separate Admin entity
 }
+
+// =============================================================================
+// ADMIN ENUMS
+// =============================================================================
+
+/// Admin types - supports multiple roles with different permissions
+enum AdminType {
+  SUPER_ADMIN // Full system access
+  SUPPORT_ADMIN // Customer support, account management
+  FINANCE_ADMIN // Finance operations
+  RISK_ADMIN // Risk management, fraud detection
+  BUSINESS_ADMIN // Business user management
+}
+
+/// Admin account status
+enum AdminStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+// =============================================================================
+// USER MODEL
+// =============================================================================
 
 model User {
   id           Int      @id @default(autoincrement())
@@ -27,15 +55,128 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  otps          OTP[]
-  refreshTokens RefreshToken[]
-
-  userType            UserType             @default(CUSTOMER)
+  otps                OTP[]
+  refreshTokens       RefreshToken[]
   revokedAccessTokens RevokedAccessToken[]
+
+  userType UserType @default(CUSTOMER)
 
   wallets        Wallet[]
   paymentIntents PaymentIntent[] // Future: for card/top-up payments
+
+  // Admin relation - 1:1 (only exists for admin users)
+  admin Admin?
+
+  @@index([phoneNumber])
 }
+
+// =============================================================================
+// ADMIN MODEL
+// =============================================================================
+
+/// Separate admin entity - 1:1 relation with User
+/// Allows multiple admin types and admin-specific metadata
+model Admin {
+  /// Primary key
+  id Int @id @default(autoincrement())
+
+  /// Public-facing ID for sharing/admin references
+  publicId String @unique @default(cuid())
+
+  /// Type of admin - determines permissions
+  adminType AdminType
+
+  /// Account status
+  status AdminStatus @default(ACTIVE)
+
+  /// Department (e.g., "Finance", "Support", "Operations", "Risk")
+  department String?
+
+  /// Granular permissions array (can override type-based defaults)
+  permissions String[]
+
+  /// Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Last login timestamp
+  lastLoginAt DateTime?
+
+  // ========================================================================
+  // RELATIONS
+  // ========================================================================
+
+  /// 1:1 relation to User - admin is a User with additional admin properties
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int  @unique
+
+  /// Audit trail of all admin actions
+  adminAuditLogs AdminAuditLog[]
+
+  // ========================================================================
+  // INDEXES
+  // ========================================================================
+  @@index([adminType])
+  @@index([status])
+}
+
+// =============================================================================
+// ADMIN AUDIT LOG MODEL
+// =============================================================================
+
+/// Comprehensive audit log for ALL admin actions
+/// Tracks who did what, when, and from where
+model AdminAuditLog {
+  /// Primary key
+  id Int @id @default(autoincrement())
+
+  /// Action performed
+  /// Examples: USER_SUSPENDED, WALLET_ADJUSTED, TRANSACTION_REFUNDED,
+  ///           ADMIN_CREATED, PASSWORD_CHANGED, LOGIN_FAILED
+  action String
+
+  /// Type of entity affected (e.g., "Transaction", "Wallet", "User", "Admin")
+  entityType String
+
+  /// ID of the affected entity
+  entityId Int
+
+  /// Human-readable description of the action
+  description String?
+
+  /// Flexible metadata storage
+  /// Stores: old/new values, request details, response data, etc.
+  metadata Json?
+
+  /// IP address of the admin when performing the action
+  ipAddress String?
+
+  /// User agent string
+  userAgent String?
+
+  /// Timestamp of the action
+  createdAt DateTime @default(now())
+
+  // ========================================================================
+  // RELATIONS
+  // ========================================================================
+
+  /// The admin who performed this action
+  admin   Admin @relation(fields: [adminId], references: [id])
+  adminId Int
+
+  // ========================================================================
+  // INDEXES
+  // ========================================================================
+  @@index([adminId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+// =============================================================================
+// OTP MODELS
+// =============================================================================
 
 model OTP {
   id          Int        @id @default(autoincrement())
@@ -58,6 +199,10 @@ enum OTPPurpose {
   SIGNUP
   VERIFY_TRANSACTION
 }
+
+// =============================================================================
+// TOKEN MODELS
+// =============================================================================
 
 model RefreshToken {
   id        Int      @id @default(autoincrement())
@@ -84,6 +229,10 @@ model RevokedAccessToken {
   @@index([tokenHash])
   @@index([userId])
 }
+
+// =============================================================================
+// WALLET & TRANSACTION MODELS
+// =============================================================================
 
 model Wallet {
   id        Int      @id @default(autoincrement())
