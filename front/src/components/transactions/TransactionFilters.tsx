@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,45 +10,30 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "lucide-react";
+import { Calendar, Star } from "lucide-react";
 import type { TransactionsFilters } from "@/types/transaction";
 import type { Wallet } from "@/types/wallet";
 import {
 	transactionTypeOptions,
 	transactionStatusOptions,
 } from "@/types/transaction";
-import { getUserWallets } from "@/lib/api/wallet";
+import { Badge } from "../ui/badge";
 
 interface TransactionFiltersProps {
 	filters: TransactionsFilters;
+	wallets: Wallet[];
 	onApply: (filters: TransactionsFilters) => void;
 	onClear: () => void;
 }
 
 export function TransactionFilters({
 	filters,
+	wallets,
 	onApply,
 	onClear,
 }: TransactionFiltersProps) {
 	const [localFilters, setLocalFilters] =
 		useState<TransactionsFilters>(filters);
-	const [wallets, setWallets] = useState<Wallet[]>([]);
-	const [isLoadingWallets, setIsLoadingWallets] = useState(true);
-
-	// Load wallets on mount
-	useEffect(() => {
-		const loadWallets = async () => {
-			try {
-				const response = await getUserWallets();
-				setWallets(response.wallets || []);
-			} catch (error) {
-				console.error("Failed to load wallets:", error);
-			} finally {
-				setIsLoadingWallets(false);
-			}
-		};
-		loadWallets();
-	}, []);
 
 	const handleApply = () => {
 		onApply(localFilters);
@@ -77,6 +62,7 @@ export function TransactionFilters({
 				<div>
 					<label className="text-sm font-medium mb-2 block">نوع تراکنش</label>
 					<Select
+						dir="rtl"
 						value={localFilters.type || ""}
 						onValueChange={(value) => updateFilter("type", value || undefined)}
 					>
@@ -97,6 +83,7 @@ export function TransactionFilters({
 				<div>
 					<label className="text-sm font-medium mb-2 block">وضعیت</label>
 					<Select
+						dir="rtl"
 						value={localFilters.status || ""}
 						onValueChange={(value) =>
 							updateFilter("status", value || undefined)
@@ -119,6 +106,7 @@ export function TransactionFilters({
 				<div>
 					<label className="text-sm font-medium mb-2 block">کیف پول</label>
 					<Select
+						dir="rtl"
 						value={localFilters.walletId?.toString() || ""}
 						onValueChange={(value) =>
 							updateFilter(
@@ -126,7 +114,6 @@ export function TransactionFilters({
 								value === "all" ? undefined : parseInt(value),
 							)
 						}
-						disabled={isLoadingWallets}
 					>
 						<SelectTrigger>
 							<SelectValue placeholder="همه" />
@@ -136,6 +123,16 @@ export function TransactionFilters({
 							{wallets.map((wallet) => (
 								<SelectItem key={wallet.id} value={wallet.id.toString()}>
 									{wallet.name || `**** ${wallet.publicId.slice(-4)}`}
+
+									{wallet.primary && (
+										<Badge
+											variant="secondary"
+											className="bg-yellow-100 text-yellow-800 gap-1"
+										>
+											اصلی
+											<Star className="h-3 w-3 fill-yellow-500" />
+										</Badge>
+									)}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -175,9 +172,9 @@ export function TransactionFilters({
 			</div>
 
 			{/* Action Buttons */}
-			<div className="flex gap-2 justify-end">
+			<div className="flex gap-2 justify-start">
 				<Button variant="outline" onClick={handleClear}>
-					پاک کردن
+					بازگشت به حالت پیش فرض
 				</Button>
 				<Button onClick={handleApply}>اعمال فیلتر</Button>
 			</div>

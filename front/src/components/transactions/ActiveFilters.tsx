@@ -84,25 +84,8 @@ export function ActiveFilters({
 					className="flex items-center gap-1 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-full text-sm"
 				>
 					<span>{filter.label}</span>
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-4 w-4 p-0 hover:bg-transparent"
-						onClick={() => onRemove(filter.key)}
-					>
-						<X className="h-3 w-3" />
-					</Button>
 				</div>
 			))}
-			<Button
-				variant="ghost"
-				size="sm"
-				onClick={onClearAll}
-				className="text-muted-foreground hover:text-foreground"
-			>
-				<FilterX className="h-4 w-4 ml-1" />
-				پاک کردن همه
-			</Button>
 		</div>
 	);
 }

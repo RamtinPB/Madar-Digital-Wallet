@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import { ArrowRight, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { MainLayout } from "@/components/MainLayout";
-import { Button } from "@/components/ui/button";
 import { useTransactions } from "@/hooks/useTransactions";
 import { getUserWallets } from "@/lib/api/wallet";
 import type { Wallet } from "@/types/wallet";
@@ -13,15 +12,15 @@ import type {
 } from "@/types/transaction";
 import {
 	TransactionSearch,
+	TransactionFilters,
 	ActiveFilters,
 	TransactionTable,
 	TransactionPagination,
 	ReceiptModal,
 } from "@/components/transactions";
-import { TransactionFiltersModal } from "@/components/shared/modals/TransactionFiltersModal";
+import { Badge } from "@/components/ui/badge";
 
 export default function TransactionsPage() {
-	const [showFilters, setShowFilters] = useState(false);
 	const [wallets, setWallets] = useState<Wallet[]>([]);
 	const [selectedTransaction, setSelectedTransaction] =
 		useState<TransactionWithDetails | null>(null);
@@ -65,8 +64,7 @@ export default function TransactionsPage() {
 
 	// Handle apply filters
 	const handleApplyFilters = (newFilters: TransactionsFilters) => {
-		setFilters(newFilters);
-		setShowFilters(false);
+		setFilters({ ...newFilters, page: 1 }); // Reset to page 1
 	};
 
 	// Handle clear filters - reset to primary wallet
@@ -80,23 +78,6 @@ export default function TransactionsPage() {
 		}
 	};
 
-	// Handle remove single filter - for walletId, reset to primary wallet instead of removing
-	const handleRemoveFilter = (key: keyof TransactionsFilters) => {
-		// If removing walletId, reset to primary wallet instead of truly removing
-		if (key === "walletId") {
-			const primaryWallet = wallets.find((w) => w.primary);
-			if (primaryWallet) {
-				setFilters({ ...filters, walletId: primaryWallet.id });
-			}
-			return;
-		}
-
-		// For other filters, remove them
-		const newFilters = { ...filters };
-		delete newFilters[key];
-		setFilters(newFilters);
-	};
-
 	// Handle view receipt
 	const handleViewReceipt = (transaction: TransactionWithDetails) => {
 		setSelectedTransaction(transaction);
@@ -108,16 +89,6 @@ export default function TransactionsPage() {
 		setShowReceiptModal(false);
 		setSelectedTransaction(null);
 	};
-
-	// Check if any filters are active (excluding search)
-	// Note: walletId is always active since we default to primary wallet
-	const hasActiveFilters = !!(
-		filters.type ||
-		filters.status ||
-		filters.fromDate ||
-		filters.toDate ||
-		filters.walletId
-	);
 
 	// Get the current wallet being displayed
 	const getCurrentWallet = () => {
@@ -152,7 +123,7 @@ export default function TransactionsPage() {
 						</div>
 					</div>
 
-					{/* Search and Filter Bar */}
+					{/* Search Bar */}
 					<div className="flex flex-col sm:flex-row gap-4">
 						<div className="flex-1">
 							<TransactionSearch
@@ -160,39 +131,41 @@ export default function TransactionsPage() {
 								onChange={handleSearch}
 							/>
 						</div>
-						<Button
-							variant="outline"
-							onClick={() => setShowFilters(true)}
-							className="gap-2"
-						>
-							<SlidersHorizontal className="h-4 w-4" />
-							فیلترها
-							{hasActiveFilters && (
-								<span className="bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
-									!
-								</span>
-							)}
-						</Button>
 					</div>
 
-					{/* Active Filters Tags - Always show when filters are active */}
-					{hasActiveFilters && (
-						<ActiveFilters
-							filters={filters}
-							wallets={wallets}
-							onRemove={handleRemoveFilter}
-							onClearAll={handleClearFilters}
-						/>
-					)}
+					{/* Transaction Filters */}
+					<TransactionFilters
+						filters={filters}
+						wallets={wallets}
+						onApply={handleApplyFilters}
+						onClear={handleClearFilters}
+					/>
+
+					{/* Active Filters - Shows what filters are currently applied */}
+					<ActiveFilters
+						filters={filters}
+						wallets={wallets}
+						onRemove={() => {}}
+						onClearAll={handleClearFilters}
+					/>
 
 					{/* Wallet Badge - Shows which wallet's transactions are being displayed */}
-					{!hasActiveFilters && currentWallet && (
+					{currentWallet && (
 						<div className="flex flex-wrap items-center gap-2">
 							<div className="flex items-center gap-1 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-full text-sm">
 								<span>
 									کیف پول:{" "}
 									{currentWallet.name ||
 										`**** ${currentWallet.publicId.slice(-4)}`}
+									{currentWallet.primary && (
+										<Badge
+											variant="secondary"
+											className="bg-yellow-100 text-yellow-800 gap-1"
+										>
+											اصلی
+											<Star className="h-3 w-3 fill-yellow-500" />
+										</Badge>
+									)}
 								</span>
 							</div>
 						</div>
@@ -224,16 +197,6 @@ export default function TransactionsPage() {
 							onLimitChange={setLimit}
 						/>
 					)}
-
-					{/* Filters Modal */}
-					<TransactionFiltersModal
-						isOpen={showFilters}
-						onClose={() => setShowFilters(false)}
-						filters={filters}
-						wallets={wallets}
-						onApply={handleApplyFilters}
-						onClear={handleClearFilters}
-					/>
 
 					{/* Receipt Modal */}
 					<ReceiptModal

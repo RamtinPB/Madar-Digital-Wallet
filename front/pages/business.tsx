@@ -19,7 +19,7 @@ const MOCK_PRODUCT: Product = {
 	nameFa: "اشتراک پرمیوم",
 	description: "Premium subscription for exclusive features",
 	descriptionFa: "اشتراک پرمیوم برای ویژگی‌های انحصاری",
-	price: 500000,
+	price: 100000,
 	image: "", // Empty for placeholder
 };
 

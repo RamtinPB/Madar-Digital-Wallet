@@ -123,6 +123,14 @@ export default function Dashboard() {
 		setIsTransferModalOpen(true);
 	};
 
+	// Composite success handler for transaction modals - refreshes both wallets and transactions
+	const handleTransactionSuccess = () => {
+		fetchWallets();
+		if (selectedWalletId) {
+			fetchTransactions(selectedWalletId);
+		}
+	};
+
 	return (
 		<div className="space-y-6">
 			{/* Welcome header */}
@@ -189,21 +197,21 @@ export default function Dashboard() {
 				onClose={() => setIsDepositModalOpen(false)}
 				wallet={selectedWallet || null}
 				wallets={wallets}
-				onSuccess={fetchWallets}
+				onSuccess={handleTransactionSuccess}
 			/>
 			<WithdrawModal
 				isOpen={isWithdrawModalOpen}
 				onClose={() => setIsWithdrawModalOpen(false)}
 				wallet={selectedWallet || null}
 				wallets={wallets}
-				onSuccess={fetchWallets}
+				onSuccess={handleTransactionSuccess}
 			/>
 			<TransferModal
 				isOpen={isTransferModalOpen}
 				onClose={() => setIsTransferModalOpen(false)}
 				wallet={selectedWallet || null}
 				wallets={wallets}
-				onSuccess={fetchWallets}
+				onSuccess={handleTransactionSuccess}
 			/>
 		</div>
 	);
