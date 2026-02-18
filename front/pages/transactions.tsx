@@ -62,35 +62,45 @@ export default function TransactionsPage() {
 		setFilters({ search: search || undefined });
 	};
 
-	// Handle apply filters - keep "all" values for display in ActiveFilters
-	const handleApplyFilters = (newFilters: TransactionsFilters) => {
-		setFilters({ ...newFilters, page: 1 }); // Reset to page 1
+	// Handle filter changes from TransactionFilters component
+	// This is called directly when user changes any filter
+	const handleFilterChange = (newFilters: TransactionsFilters) => {
+		setFilters(newFilters);
 	};
 
-	// Clean filters before sending to API - convert "all" to undefined
-	const cleanFiltersForAPI = (
-		filtersToClean: TransactionsFilters,
-	): TransactionsFilters => {
-		const cleaned = { ...filtersToClean };
-		if (cleaned.type === "all") cleaned.type = undefined;
-		if (cleaned.status === "all") cleaned.status = undefined;
-		if (cleaned.walletId === "all") cleaned.walletId = undefined;
-		return cleaned;
-	};
-
-	// Get filters for API call (cleaned)
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const getAPIFilters = () => cleanFiltersForAPI(filters);
-
-	// Handle clear filters - reset to primary wallet
+	// Handle clear all filters - reset to default state with primary wallet
 	const handleClearFilters = () => {
-		// Reset to primary wallet - this is the default state
 		const primaryWallet = wallets.find((w) => w.primary);
-		if (primaryWallet) {
-			setFilters({ walletId: primaryWallet.id });
-		} else {
-			setFilters({});
-		}
+
+		// Clear all filters and set wallet to primary (or undefined if no primary)
+		// We must explicitly set all filter keys to undefined since setFilters merges
+		setFilters({
+			walletId: undefined, // primaryWallet?.id,
+			type: undefined,
+			status: undefined,
+			fromDate: undefined,
+			toDate: undefined,
+			search: undefined,
+			page: 1,
+		});
+	};
+
+	// Handle remove individual filter
+	const handleRemoveFilter = (key: keyof TransactionsFilters) => {
+		const currentFilters = { ...filters };
+
+		// Remove the specific filter by setting it to undefined
+		// Keep page/limit as they are
+		delete currentFilters[key];
+
+		// If removing walletId, we might want to show all wallets (undefined)
+		// If removing type/status, they become undefined (show all)
+		// If removing dates/search, they become undefined
+
+		setFilters({
+			...currentFilters,
+			[key]: undefined,
+		});
 	};
 
 	// Handle view receipt
@@ -105,9 +115,9 @@ export default function TransactionsPage() {
 		setSelectedTransaction(null);
 	};
 
-	// Get the current wallet being displayed - handle "all" case
+	// Get the current wallet being displayed - handle undefined case
 	const getCurrentWallet = () => {
-		if (filters.walletId === "all") {
+		if (filters.walletId === undefined || filters.walletId === "all") {
 			return null; // Showing all wallets
 		}
 		if (filters.walletId) {
@@ -118,11 +128,10 @@ export default function TransactionsPage() {
 
 	const currentWallet = getCurrentWallet();
 
-	// Current wallet ID for passing to components - handle "all" case
-	const currentWalletId =
-		filters.walletId && filters.walletId !== "all"
-			? Number(filters.walletId)
-			: undefined;
+	// Current wallet ID for passing to components
+	const currentWalletId = filters.walletId
+		? Number(filters.walletId)
+		: undefined;
 
 	return (
 		<>
@@ -152,11 +161,11 @@ export default function TransactionsPage() {
 						</div>
 					</div>
 
-					{/* Transaction Filters */}
+					{/* Transaction Filters - Controlled component */}
 					<TransactionFilters
 						filters={filters}
 						wallets={wallets}
-						onApply={handleApplyFilters}
+						onFilterChange={handleFilterChange}
 						onClear={handleClearFilters}
 					/>
 
@@ -164,7 +173,7 @@ export default function TransactionsPage() {
 					<ActiveFilters
 						filters={filters}
 						wallets={wallets}
-						onRemove={() => {}}
+						onRemove={handleRemoveFilter}
 						onClearAll={handleClearFilters}
 					/>
 

@@ -27,46 +27,37 @@ export function ActiveFilters({
 	onRemove,
 	onClearAll,
 }: ActiveFiltersProps) {
-	// Get active filters as an array - include primary flag for wallet filter
+	// Get active filters as an array
+	// Only include filters that have actual values (not undefined, not "all")
 	const activeFilters: {
 		key: keyof TransactionsFilters;
 		label: string;
 		primary?: boolean;
 	}[] = [];
 
-	// Handle type filter - show "همه" when "all" is selected
+	// Handle type filter - only show if it's a specific type (not "all" or undefined)
 	if (filters.type && filters.type !== "all") {
 		activeFilters.push({
 			key: "type",
 			label: `نوع: ${transactionTypeLabels[filters.type as TransactionType] || filters.type}`,
 		});
-	} else if (filters.type === "all") {
-		activeFilters.push({
-			key: "type",
-			label: `نوع: همه`,
-		});
 	}
 
-	// Handle status filter - show "همه" when "all" is selected
+	// Handle status filter - only show if it's a specific status (not "all" or undefined)
 	if (filters.status && filters.status !== "all") {
 		activeFilters.push({
 			key: "status",
 			label: `وضعیت: ${transactionStatusLabels[filters.status as TransactionStatus] || filters.status}`,
 		});
-	} else if (filters.status === "all") {
-		activeFilters.push({
-			key: "status",
-			label: `وضعیت: همه`,
-		});
 	}
 
-	// Handle wallet filter - show "همه" when explicitly set to all
-	if (filters.walletId === "all") {
-		activeFilters.push({
-			key: "walletId",
-			label: `کیف پول: همه`,
-		});
-	} else if (filters.walletId) {
+	// Handle wallet filter - only show if walletId is a number (specific wallet)
+	// Don't show if it's "all" or undefined
+	if (
+		filters.walletId !== undefined &&
+		filters.walletId !== "all" &&
+		filters.walletId !== ""
+	) {
 		const wallet = wallets.find((w) => w.id === filters.walletId);
 		const walletLabel =
 			wallet?.name || `**** ${wallet?.publicId.slice(-4) || filters.walletId}`;
@@ -78,6 +69,7 @@ export function ActiveFilters({
 		});
 	}
 
+	// Handle date filters - only show if they have values
 	if (filters.fromDate) {
 		activeFilters.push({
 			key: "fromDate",
@@ -92,6 +84,7 @@ export function ActiveFilters({
 		});
 	}
 
+	// Handle search - only show if it has value
 	if (filters.search) {
 		activeFilters.push({
 			key: "search",
@@ -99,6 +92,7 @@ export function ActiveFilters({
 		});
 	}
 
+	// If no active filters, don't render anything
 	if (activeFilters.length === 0) {
 		return null;
 	}
@@ -123,12 +117,26 @@ export function ActiveFilters({
 					)}
 					<button
 						onClick={() => onRemove(filter.key)}
-						className="mr-1 hover:text-destructive"
+						className="mr-1 hover:text-destructive rounded-full p-0.5 hover:bg-destructive/10 transition-colors"
+						title="حذف فیلتر"
 					>
 						<X className="h-3 w-3" />
 					</button>
 				</div>
 			))}
+
+			{/* Clear All Button */}
+			{activeFilters.length > 1 && (
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={onClearAll}
+					className="text-muted-foreground hover:text-destructive h-auto py-1 px-2"
+				>
+					<FilterX className="h-3 w-3 ml-1" />
+					حذف همه
+				</Button>
+			)}
 		</div>
 	);
 }
