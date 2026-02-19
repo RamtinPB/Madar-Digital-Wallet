@@ -69,6 +69,23 @@ export default function TransactionsPage() {
 	};
 
 	// Handle clear all filters - reset to default state with primary wallet
+	const handleResetFilters = () => {
+		const primaryWallet = wallets.find((w) => w.primary);
+
+		// Clear all filters and set wallet to primary (or undefined if no primary)
+		// We must explicitly set all filter keys to undefined since setFilters merges
+		setFilters({
+			walletId: primaryWallet?.id,
+			type: undefined,
+			status: undefined,
+			fromDate: undefined,
+			toDate: undefined,
+			search: undefined,
+			page: 1,
+		});
+	};
+
+	// Handle clear all filters - reset to default state with primary wallet
 	const handleClearFilters = () => {
 		const primaryWallet = wallets.find((w) => w.primary);
 
@@ -166,7 +183,7 @@ export default function TransactionsPage() {
 						filters={filters}
 						wallets={wallets}
 						onFilterChange={handleFilterChange}
-						onClear={handleClearFilters}
+						onClear={handleResetFilters}
 					/>
 
 					{/* Active Filters - Shows what filters are currently applied */}

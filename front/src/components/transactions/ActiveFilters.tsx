@@ -126,7 +126,7 @@ export function ActiveFilters({
 			))}
 
 			{/* Clear All Button */}
-			{activeFilters.length > 1 && (
+			{activeFilters.length > 0 && (
 				<Button
 					variant="ghost"
 					size="sm"
