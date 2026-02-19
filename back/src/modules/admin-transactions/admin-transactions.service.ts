@@ -88,7 +88,7 @@ export const getTransactionById = async (
 	id: number,
 	adminPermissions: string[],
 ) => {
-	if (!hasPermission(adminPermissions, "transactions:refund")) {
+	if (!hasPermission(adminPermissions, "transactions:read")) {
 		throw new Error("Insufficient permissions");
 	}
 

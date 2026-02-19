@@ -145,6 +145,12 @@ export const verifyBusinessUser = async (
 		throw new Error("Insufficient permissions");
 	}
 
+	// Update user status to VERIFIED
+	const user = await prisma.user.update({
+		where: { id: userId },
+		data: { status: "VERIFIED" },
+	});
+
 	await adminRepository.createAuditLog({
 		adminId,
 		action: "BUSINESS_VERIFIED",
@@ -153,7 +159,7 @@ export const verifyBusinessUser = async (
 		description: notes || "Business account verified",
 	});
 
-	return { success: true, message: "Business user verified" };
+	return { success: true, message: "Business user verified", user };
 };
 
 // Reject business user
@@ -167,6 +173,12 @@ export const rejectBusinessUser = async (
 		throw new Error("Insufficient permissions");
 	}
 
+	// Update user status to REJECTED
+	const user = await prisma.user.update({
+		where: { id: userId },
+		data: { status: "REJECTED" },
+	});
+
 	await adminRepository.createAuditLog({
 		adminId,
 		action: "BUSINESS_REJECTED",
@@ -175,7 +187,7 @@ export const rejectBusinessUser = async (
 		description: reason,
 	});
 
-	return { success: true, message: "Business user rejected" };
+	return { success: true, message: "Business user rejected", user };
 };
 
 // Get business analytics

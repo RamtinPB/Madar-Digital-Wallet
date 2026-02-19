@@ -202,6 +202,23 @@ export const refreshAccessToken = async (
 	const user = await authRepository.findUserById(userId);
 	if (!user) throw new Error("User not found");
 
+	// Check if user has admin record
+	const admin = await adminRepository.findAdminByUserId(user.id);
+
+	// Build JWT payload - include admin claims if admin exists
+	const tokenPayload: any = {
+		userId: user.id,
+		userType: user.userType,
+	};
+
+	// Add admin claims if admin record exists and is active
+	if (admin && admin.status === "ACTIVE") {
+		tokenPayload.adminId = admin.id;
+		tokenPayload.adminPublicId = admin.publicId;
+		tokenPayload.adminType = admin.adminType;
+		tokenPayload.permissions = admin.permissions;
+	}
+
 	// Find stored refresh tokens for this user that are not revoked and not expired
 	const tokens = await authRepository.findValidRefreshTokens(userId);
 
@@ -210,7 +227,7 @@ export const refreshAccessToken = async (
 		const match = await bcrypt.compare(refreshToken, t.tokenHash);
 		if (match) {
 			// valid refresh token -> issue new access token (and optionally refresh rotation)
-			const accessToken = signAccessToken({ userId, userType: user.userType });
+			const accessToken = signAccessToken(tokenPayload);
 			// Optionally rotate refresh token: issue new refresh token and revoke old one
 			const newRefreshToken = signRefreshToken({ userId });
 			const newHash = await bcrypt.hash(newRefreshToken, 10);

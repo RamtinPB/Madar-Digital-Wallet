@@ -8,6 +8,13 @@ export function registerAdminUsersRoutes(appInstance: typeof app) {
 	// GET /admin/users - List users (paginated, filterable)
 	appInstance.get("/admin/users", adminUsersController.listUsers, {
 		beforeHandle: [requireAuth, requirePermission("users:read")] as any,
+		query: t.Object({
+			page: t.Optional(t.Numeric()),
+			limit: t.Optional(t.Numeric()),
+			userType: t.Optional(t.String()),
+			phoneNumber: t.Optional(t.String()),
+			status: t.Optional(t.String()),
+		}),
 	});
 
 	// GET /admin/users/:id - Get user by ID

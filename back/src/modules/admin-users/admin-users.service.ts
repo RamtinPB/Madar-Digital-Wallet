@@ -8,9 +8,11 @@ export const listUsers = async (params: {
 	limit: number;
 	userType?: string;
 	phoneNumber?: string;
+	status?: string;
 	adminPermissions: string[];
 }) => {
-	const { page, limit, userType, phoneNumber, adminPermissions } = params;
+	const { page, limit, userType, phoneNumber, status, adminPermissions } =
+		params;
 
 	// Check permission
 	if (!hasPermission(adminPermissions, "users:read")) {
@@ -22,6 +24,7 @@ export const listUsers = async (params: {
 	const where: any = {};
 	if (userType) where.userType = userType;
 	if (phoneNumber) where.phoneNumber = { contains: phoneNumber };
+	if (status) where.status = status;
 
 	const [users, total] = await Promise.all([
 		prisma.user.findMany({
@@ -35,7 +38,7 @@ export const listUsers = async (params: {
 				userType: true,
 				status: true,
 				createdAt: true,
-				updatedAt: true,
+				lastLoginAt: true,
 			},
 			orderBy: { createdAt: "desc" },
 		}),
@@ -69,6 +72,7 @@ export const getUserById = async (id: number, adminPermissions: string[]) => {
 			status: true,
 			createdAt: true,
 			updatedAt: true,
+			lastLoginAt: true,
 		},
 	});
 

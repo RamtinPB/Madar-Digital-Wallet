@@ -26,6 +26,8 @@ enum UserType {
 enum UserStatus {
   ACTIVE
   SUSPENDED
+  VERIFIED // Business accounts verified by admin
+  REJECTED // Business accounts rejected by admin
 }
 
 // =============================================================================
@@ -53,12 +55,13 @@ enum AdminStatus {
 // =============================================================================
 
 model User {
-  id           Int      @id @default(autoincrement())
-  publicId     String   @unique @default(cuid())
-  phoneNumber  String   @unique
+  id           Int       @id @default(autoincrement())
+  publicId     String    @unique @default(cuid())
+  phoneNumber  String    @unique
   passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime? // Track last login for security and audit
 
   otps                OTP[]
   refreshTokens       RefreshToken[]

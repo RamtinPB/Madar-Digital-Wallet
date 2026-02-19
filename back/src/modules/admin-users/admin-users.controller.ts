@@ -4,9 +4,9 @@ import { requirePermission } from "../../infrastructure/auth/permission.middlewa
 import * as adminUsersService from "./admin-users.service";
 
 // List users (paginated, filterable)
-// GET /admin/users?page=1&limit=10&userType=CUSTOMER&phoneNumber=0912
+// GET /admin/users?page=1&limit=10&userType=CUSTOMER&phoneNumber=0912&status=ACTIVE
 export const listUsers = async (ctx: any) => {
-	const { page, limit, userType, phoneNumber } = ctx.query || {};
+	const { page, limit, userType, phoneNumber, status } = ctx.query || {};
 
 	// Parse query params with defaults
 	const parsedPage = parseInt(page) || 1;
@@ -18,6 +18,7 @@ export const listUsers = async (ctx: any) => {
 			limit: parsedLimit,
 			userType,
 			phoneNumber,
+			status,
 			adminPermissions: ctx.user.permissions || [],
 		});
 
