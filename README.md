@@ -619,7 +619,7 @@ This application is currently in development. For production deployment:
 
 <div align="center">
 
-**Built with ❤️ by the Madar Team**
+**Built with ❤️ by the The Ram**
 
 [↑ Back to Top](#madar-digital-wallet)
 
